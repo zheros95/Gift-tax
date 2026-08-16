@@ -1402,7 +1402,7 @@ function calculate(){
     const rate=isFraud?(isIntl?0.60:0.40):0.20;
     const pen=Math.floor(autoPayable*rate);
     const red=reductionRate('none',months,voluntary);
-    reportPenalty=Math.floor(pen*(1-red));
+    reportPenalty=pen-Math.floor(pen*red);
     penaltyAudit.push(`무신고가산세 = 무신고납부세액 ${won(autoPayable)} × ${Math.round(rate*100)}%${isFraud?'(부정)':''} = ${won(pen)}`);
     if(red>0) penaltyAudit.push(`  └ 자발적 신고 감면 ${Math.round(red*100)}% → ${won(reportPenalty)}`);
     else if(voluntary&&months>6) penaltyAudit.push(`  └ 6개월 초과 → 무신고 감면 없음`);
@@ -1414,7 +1414,7 @@ function calculate(){
       const genU=Math.max(0,totU-fraudU), fr=isIntl?0.60:0.40;
       const genPen=Math.floor(genU*0.10), fraudPen=Math.floor(fraudU*fr), pen=genPen+fraudPen;
       const red=reductionRate('under',months,voluntary);
-      reportPenalty=Math.floor(pen*(1-red));
+      reportPenalty=pen-Math.floor(pen*red);
       penaltyAudit.push(`과소신고가산세 = 일반 ${won(genU)}×10% ${won(genPen)}${fraudU?` + 부정 ${won(fraudU)}×${Math.round(fr*100)}% ${won(fraudPen)}`:''} = ${won(pen)}`);
       if(red>0) penaltyAudit.push(`  └ 자발적 수정신고 감면 ${Math.round(red*100)}% → ${won(reportPenalty)}`);
     }
