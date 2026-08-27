@@ -231,7 +231,7 @@
 <body>
 <div id="jsDead" style="background:#b3261e;color:#fff;padding:12px 18px;font-size:13.5px;line-height:1.6">
   ⚠️ <b>계산 기능이 동작하지 않는 상태입니다.</b> 자바스크립트가 실행되지 않았습니다 —
-  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 184KB) 보안프로그램이 스크립트를 차단한 경우입니다.
+  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 185KB) 보안프로그램이 스크립트를 차단한 경우입니다.
   함께 배포된 <b>증여세_계산기_업무망.xlsx</b>(엑셀판)를 사용하세요.
 </div>
 <header>
@@ -1246,12 +1246,21 @@ function easeDate(el){
   const btn=document.createElement('button'); btn.type='button'; btn.className='de-cal';
   btn.tabIndex=-1; btn.title='달력에서 선택'; btn.textContent='📅';
   wrap.appendChild(btn); wrap.appendChild(pick);
+  // 토글: 열림 상태 추적 — 재클릭 시 브라우저가 라이트디스미스로 닫은 걸 다시 열지 않는다.
+  // 다른 곳 클릭·날짜 선택(change)으로 닫히면 플래그도 함께 해제.
+  let pOpen=false,pDoc=null;
+  const pClose=()=>{pOpen=false;if(pDoc){document.removeEventListener('pointerdown',pDoc,true);pDoc=null;}};
   btn.addEventListener('click',()=>{
+    if(pOpen){pClose();return;}
     const d=el.value.replace(/\D/g,'');
     pick.value=(d.length===8&&validYmd(d))?d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6):'';
-    try{pick.showPicker();}catch(err){pick.focus();}
+    try{pick.showPicker();pOpen=true;
+      pDoc=ev=>{if(!btn.contains(ev.target))pClose();};
+      document.addEventListener('pointerdown',pDoc,true);
+    }catch(err){pick.focus();}
   });
   pick.addEventListener('change',()=>{
+    pClose();
     if(!pick.value)return;
     el.value=pick.value; el.classList.remove('de-bad');
   });
