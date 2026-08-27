@@ -158,6 +158,8 @@
   a.tab,span.tab{text-decoration:none;display:inline-block;color:inherit}
   /* ─ §39·§45의5 페인 보정(원본 스타일 유지) ─ */
   #pane39 .formula-box,#pane45 .formula-box{margin:2px 14px 14px}
+  /* ─ 날짜 쉬운 입력(8자리 타이핑) — 잘못된 날짜는 빨간 테두리 ─ */
+  input.de-bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(179,38,30,.10)!important}
   #pane45 label.f45hsw{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);
     white-space:nowrap;cursor:pointer;flex:0 0 auto;user-select:none}
   #pane45 label.f45hsw.on{color:var(--warn);font-weight:600}
@@ -221,7 +223,7 @@
 <body>
 <div id="jsDead" style="background:#b3261e;color:#fff;padding:12px 18px;font-size:13.5px;line-height:1.6">
   ⚠️ <b>계산 기능이 동작하지 않는 상태입니다.</b> 자바스크립트가 실행되지 않았습니다 —
-  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 181KB) 보안프로그램이 스크립트를 차단한 경우입니다.
+  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 183KB) 보안프로그램이 스크립트를 차단한 경우입니다.
   함께 배포된 <b>증여세_계산기_업무망.xlsx</b>(엑셀판)를 사용하세요.
 </div>
 <header>
@@ -1218,6 +1220,38 @@ document.addEventListener('keydown',e=>{
   const pane=document.querySelector('.tab-pane.active');
   if(pane&&PANE_CALC[pane.id]){ const b=$(PANE_CALC[pane.id]); if(b) b.click(); }
 });
+// ─ 날짜 쉬운 입력: 모든 날짜칸을 숫자 8자리 타이핑(YYYYMMDD)으로 전환 — 자동 하이픈,
+//   숫자 키패드(inputmode), 동적 생성 행(MutationObserver)까지 적용. 값은 기존과 동일한 YYYY-MM-DD.
+function validYmd(d){const y=+d.slice(0,4),m=+d.slice(4,6),dd=+d.slice(6);
+  if(y<1900||y>2100||m<1||m>12||dd<1)return false;
+  const t=new Date(y,m-1,dd);return t.getFullYear()===y&&t.getMonth()===m-1&&t.getDate()===dd;}
+function easeDate(el){
+  if(!el||el.dataset.de)return; el.dataset.de='1';
+  try{el.type='text';}catch(err){}
+  el.setAttribute('inputmode','numeric'); el.setAttribute('autocomplete','off');
+  if(!el.placeholder)el.placeholder='YYYYMMDD';
+  el.addEventListener('input',()=>{
+    const c=el.selectionStart,before=el.value.length;
+    const d=el.value.replace(/\D/g,'').slice(0,8);
+    let out=d;
+    if(d.length>6)out=d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6);
+    else if(d.length>4)out=d.slice(0,4)+'-'+d.slice(4);
+    el.value=out;
+    try{const p=Math.max(0,(c||0)+(el.value.length-before));el.selectionStart=el.selectionEnd=p;}catch(err){}
+    el.classList.toggle('de-bad',d.length===8&&!validYmd(d));
+    if(d.length<8)el.classList.remove('de-bad');
+  });
+  el.addEventListener('blur',()=>{
+    const d=el.value.replace(/\D/g,'');
+    el.classList.toggle('de-bad',d.length>0&&(d.length<8||!validYmd(d)));
+  });
+}
+document.querySelectorAll('input[type=date]').forEach(easeDate);
+new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){
+  if(n.nodeType!==1)continue;
+  if(n.matches&&n.matches('input[type=date]'))easeDate(n);
+  if(n.querySelectorAll)n.querySelectorAll('input[type=date]').forEach(easeDate);
+}}).observe(document.body,{childList:true,subtree:true});
 window.__blk.push(1);
 </script>
 
