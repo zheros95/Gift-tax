@@ -158,8 +158,16 @@
   a.tab,span.tab{text-decoration:none;display:inline-block;color:inherit}
   /* ─ §39·§45의5 페인 보정(원본 스타일 유지) ─ */
   #pane39 .formula-box,#pane45 .formula-box{margin:2px 14px 14px}
-  /* ─ 날짜 쉬운 입력(8자리 타이핑) — 잘못된 날짜는 빨간 테두리 ─ */
+  /* ─ 날짜 쉬운 입력(8자리 타이핑) — 잘못된 날짜는 빨간 테두리, 📅는 칸 안쪽 오버레이 ─ */
   input.de-bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(179,38,30,.10)!important}
+  .de-wrap{position:relative;display:block;min-width:0}
+  .de-wrap>input:first-child{width:100%;padding-right:28px!important}
+  .de-cal{position:absolute;right:2px;top:50%;transform:translateY(-50%);border:none;background:none;
+    cursor:pointer;font-size:14px;line-height:1;padding:3px;opacity:.8}
+  .de-cal:hover{opacity:1}
+  input.de-pick{position:absolute;right:0;bottom:0;width:1px!important;height:1px;opacity:0;border:0;padding:0!important;pointer-events:none}
+  .gift-item .de-wrap{flex:0 0 134px}
+  @media(max-width:480px){.gift-item .de-wrap{flex:0 0 116px}}
   #pane45 label.f45hsw{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);
     white-space:nowrap;cursor:pointer;flex:0 0 auto;user-select:none}
   #pane45 label.f45hsw.on{color:var(--warn);font-weight:600}
@@ -223,7 +231,7 @@
 <body>
 <div id="jsDead" style="background:#b3261e;color:#fff;padding:12px 18px;font-size:13.5px;line-height:1.6">
   ⚠️ <b>계산 기능이 동작하지 않는 상태입니다.</b> 자바스크립트가 실행되지 않았습니다 —
-  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 183KB) 보안프로그램이 스크립트를 차단한 경우입니다.
+  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 184KB) 보안프로그램이 스크립트를 차단한 경우입니다.
   함께 배포된 <b>증여세_계산기_업무망.xlsx</b>(엑셀판)를 사용하세요.
 </div>
 <header>
@@ -1230,6 +1238,23 @@ function easeDate(el){
   try{el.type='text';}catch(err){}
   el.setAttribute('inputmode','numeric'); el.setAttribute('autocomplete','off');
   if(!el.placeholder)el.placeholder='YYYYMMDD';
+  // 📅 버튼 + 숨은 네이티브 피커 (showPicker 미지원 시 focus 폴백)
+  const wrap=document.createElement('span'); wrap.className='de-wrap';
+  el.parentNode.insertBefore(wrap,el); wrap.appendChild(el);
+  const pick=document.createElement('input'); pick.type='date'; pick.className='de-pick';
+  pick.tabIndex=-1; pick.dataset.de='1'; pick.setAttribute('aria-hidden','true');
+  const btn=document.createElement('button'); btn.type='button'; btn.className='de-cal';
+  btn.tabIndex=-1; btn.title='달력에서 선택'; btn.textContent='📅';
+  wrap.appendChild(btn); wrap.appendChild(pick);
+  btn.addEventListener('click',()=>{
+    const d=el.value.replace(/\D/g,'');
+    pick.value=(d.length===8&&validYmd(d))?d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6):'';
+    try{pick.showPicker();}catch(err){pick.focus();}
+  });
+  pick.addEventListener('change',()=>{
+    if(!pick.value)return;
+    el.value=pick.value; el.classList.remove('de-bad');
+  });
   el.addEventListener('input',()=>{
     const c=el.selectionStart,before=el.value.length;
     const d=el.value.replace(/\D/g,'').slice(0,8);
