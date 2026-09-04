@@ -1458,7 +1458,9 @@ function calculate(){
     // 분자("가산한 증여재산의 과세표준", §58②) — 상속증여세과-366·재산세과-421·서일46014-10913
     //   ① 그 재산에 증여재산공제가 귀속된 경우: 가산가액 − 귀속 공제액
     //   ② 귀속되지 않은 경우: 당해 합산 공제액의 잔여를 당해분·미귀속 가산분 가액으로 안분(그 회차 공제액 한도)
-    //   안분된 몫은 그 재산에 귀속시켜 다음 회차에서 ①로 취급 → 분자+당해분 = 합산 과세표준 정합 유지
+    //   귀속액은 각 재산의 "증여 당시"(그 회차) 기준으로만 확정하고 이후 회차에서 소급 갱신하지 않는다
+    //   (예규 문언 "증여 당시 … 증여재산공제가 적용된 경우" 충실 + 엑셀판과 동일 산식 유지)
+    //   → 분자 = 가산액 − 귀속액 합, 당해분 = 당해가액 − 당해 귀속액 − 혼인·출산공제 ⇒ 합계 = 합산 과세표준
     let credA=0, credBnum=0, attrThis=dedCap;
     const credDetail=[];
     if(merge){
@@ -1480,10 +1482,9 @@ function calculate(){
         credDetail.push({idx:rows[j].idx,date:rows[j].date,value:rows[j].value,
                          mTax:rows[j].marginalTax,attrDed:d,base:jBase,imputed:rows[j].attrDed<=0});
       }
-      for(const j of added) if(rows[j].attrDed<=0 && attrNow[j]>0) rows[j].attrDed=attrNow[j];
       attrThis=Math.max(0, dedCap-attrSum);
     }
-    const ownBase=Math.max(0, cur.value-attrThis);                 // 당해 증여재산 고유 과세표준
+    const ownBase=Math.max(0, cur.value-attrThis-mb);              // 당해 증여재산 고유 과세표준
     const partGap = merge ? (credBnum+ownBase-taxBase) : 0;        // 정합 점검(반올림 오차 외 0이어야)
     const credB = taxBase>0 ? Math.round(calcTax*credBnum/taxBase) : 0;
     let creditPrepaid = Math.min(Math.min(credA, credB), totalCalc);
