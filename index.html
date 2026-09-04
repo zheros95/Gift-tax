@@ -231,7 +231,7 @@
 <body>
 <div id="jsDead" style="background:#b3261e;color:#fff;padding:12px 18px;font-size:13.5px;line-height:1.6">
   ⚠️ <b>계산 기능이 동작하지 않는 상태입니다.</b> 자바스크립트가 실행되지 않았습니다 —
-  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 185KB) 보안프로그램이 스크립트를 차단한 경우입니다.
+  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 187KB) 보안프로그램이 스크립트를 차단한 경우입니다.
   함께 배포된 <b>증여세_계산기_업무망.xlsx</b>(엑셀판)를 사용하세요.
 </div>
 <header>
@@ -1435,9 +1435,15 @@ function calculate(){
     //   A = 가산된 종전회차들의 한계 산출세액 합(합산산출−기납부, 세대생략 할증 제외)
     //   B = 당해 산출세액 × (가산종전 한계과세표준 합 ÷ 당해 합산 과세표준)
     let credA=0, credBnum=0;
-    if(merge) for(const j of added){ credA+=rows[j].marginalTax; credBnum+=rows[j].marginalBase; }
+    const credDetail=[];
+    if(merge) for(const j of added){
+      credA+=rows[j].marginalTax; credBnum+=rows[j].marginalBase;
+      credDetail.push({idx:rows[j].idx,date:rows[j].date,value:rows[j].value,
+                       mTax:rows[j].marginalTax,mBase:rows[j].marginalBase});
+    }
     const credB = taxBase>0 ? Math.round(calcTax*credBnum/taxBase) : 0;
     let creditPrepaid = Math.min(Math.min(credA, credB), totalCalc);
+    const credPick = credDetail.length ? (creditPrepaid===totalCalc && totalCalc<Math.min(credA,credB) ? 'cap' : (credA<=credB?'A':'B')) : '';
 
     const cForeign=isLast?creditForeign:0;
     const rcRate=reportCreditRate(cur.date);
@@ -1452,7 +1458,7 @@ function calculate(){
     const marginalSurcharge=surcharge;                    // 이 회차 순(純)할증 — 다음 회차 기할증 차감용(§46의3②)
     rows.push({idx:i+1,date:cur.date,value:cur.value,priorEff,merge,addedN:added.length,taxableValue,
       dedCap,mb,totalDed,taxBase,belowMin,rate:pr.rate,prog:pr.ded,calcTax,surcharge,surRate,daeseup,
-      totalCalc,creditPrepaid,credA,credB,cForeign,creditReport,rcRate,reportTypeEff,creditTotal,netTax,
+      totalCalc,creditPrepaid,credA,credB,credBnum,credDetail,credPick,cForeign,creditReport,rcRate,reportTypeEff,creditTotal,netTax,
       marginalTax,marginalBase,marginalSurcharge,grossSurcharge,priorSurcharge,isLast,info,minor,resident});
   }
   if(undatedMulti) warn.push(['warn','증여일이 비어 있는 회차가 있어 10년 합산 판정을 보수적으로 처리했습니다. 정확한 합산을 위해 증여일을 입력하세요.']);
@@ -1552,6 +1558,36 @@ function detailRows(r){
   return h;
 }
 
+// ── 기납부세액공제(§58) 계산내역 ──
+// A = 가산된 종전회차의 한계 산출세액 합(할증 제외) / B = 당해 산출세액 × (한계 과세표준 합 ÷ 당해 과세표준)
+// 공제액 = min(A, B), 당해 산출세액 합계를 넘지 못함
+function creditBreakdown(r){
+  if(!r.credDetail || !r.credDetail.length) return '';
+  let tr='';
+  for(const d of r.credDetail){
+    tr+=`<tr><td>${d.idx}회</td><td class="dt">${fmtDateShort(d.date)}</td><td>${won(d.value)}</td>
+      <td>${won(d.mTax)}</td><td>${won(d.mBase)}</td></tr>`;
+  }
+  const pickTxt = r.credPick==='cap'
+    ? `당해 산출세액 합계 ${won(r.totalCalc)}원이 더 작아 <b>한도로 제한</b>`
+    : (r.credPick==='A' ? '<b>A(종전 한계세액 합)</b>가 작아 A 채택' : '<b>B(한도)</b>가 작아 B 채택');
+  const bTxt = r.taxBase>0
+    ? `${won(r.calcTax)} × (${won(r.credBnum)} ÷ ${won(r.taxBase)}) = <b>${won(r.credB)}원</b>`
+    : '과세표준 0 — 0원';
+  return `<div class="sec-title">기납부세액공제 계산내역 (§58)</div>
+    <div class="multi-scroll"><table class="multi-tbl">
+      <thead><tr><th>회</th><th>증여일</th><th>증여가액</th><th>한계 산출세액<br>(A 구성)</th><th>한계 과세표준<br>(B 구성)</th></tr></thead>
+      <tbody>${tr}</tbody>
+      <tr class="sum"><td colspan="3" style="text-align:right">합계</td><td>${won(r.credA)}</td><td>${won(r.credBnum)}</td></tr>
+    </table></div>
+    <div class="formula-box">
+      <b>A</b> 종전 회차 한계 산출세액 합(할증 제외) = <b>${won(r.credA)}원</b><br>
+      <b>B</b> 당해 산출세액 × (한계 과세표준 합 ÷ 당해 과세표준) = ${bTxt}<br>
+      공제액 = min(A, B) = <b>${won(r.creditPrepaid)}원</b> — ${pickTxt}
+    </div>
+    <div class="note warn" style="font-size:11px">한계 산출세액 = 그 회차의 산출세액에서 그 회차가 받은 기납부세액공제를 뺀 금액(할증 제외), 한계 과세표준 = 그 회차 과세표준에서 그보다 앞선 가산분 과세표준을 뺀 금액. 종전 증여가 여러 건이면 각 회차의 순증분만 누적됩니다(§58, 재산세과-421·조심2008서3773).</div>`;
+}
+
 // ── 결과 렌더 ──
 function render(r){
   if(r.empty){ $('result').innerHTML=`<div class="note red" style="border:none">증여재산가액을 1건 이상 입력하세요.</div>`; return; }
@@ -1584,8 +1620,10 @@ function render(r){
       </table></div>`;
     body+=`<div class="sec-title">당해(최종, ${r.rows.length}회차) 증여 상세</div>`;
     body+=`<table class="calc-tbl"><tbody>${detailRows(last)}</tbody></table>`;
+    body+=creditBreakdown(last);
   } else {
     body+=`<table class="calc-tbl"><tbody>${detailRows(last)}</tbody></table>`;
+    body+=creditBreakdown(last);
   }
 
   // 안내
