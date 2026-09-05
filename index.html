@@ -64,7 +64,15 @@
   .gift-item .g-del{flex:0 0 32px;border:1px solid var(--line);background:#fff;border-radius:7px;
     color:var(--muted);cursor:pointer;height:38px;font-size:16px;line-height:1}
   .gift-item .g-del:hover{background:var(--redbg);color:var(--red);border-color:#f3cdc9}
-  @media(max-width:480px){.gift-item .g-date{flex:0 0 116px}}
+  .gift-item .g-farm{flex:0 0 auto;display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);
+    cursor:pointer;user-select:none;white-space:nowrap;padding:0 2px}
+  .gift-item .g-farm input{width:14px;height:14px;margin:0;accent-color:var(--accent)}
+  .gift-item .g-farm.on{color:var(--accent);font-weight:700}
+  @media(max-width:480px){.gift-item{gap:4px}.gift-item .gidx{flex:0 0 22px}.gift-item .g-date{flex:0 0 116px}.gift-item .g-del{flex:0 0 28px}.gift-item .g-farm{font-size:10.5px;padding:0}}
+  table.multi-tbl tr.farm td{background:#f3faf6}
+  table.multi-tbl tr.taxed td{background:#fdf8f1}
+  .pill.farm{background:var(--okbg);color:var(--accent)}
+  .pill.taxed{background:var(--warnbg);color:var(--warn)}
   #addGift{width:100%;border:1px dashed var(--blue);background:#f4f9fe;color:var(--blue);border-radius:8px;
     padding:10px;font-size:13px;cursor:pointer;font-weight:700;margin-top:3px}
   #addGift:hover{background:#e9f2fc}
@@ -235,11 +243,11 @@
 <body>
 <div id="jsDead" style="background:#b3261e;color:#fff;padding:12px 18px;font-size:13.5px;line-height:1.6">
   ⚠️ <b>계산 기능이 동작하지 않는 상태입니다.</b> 자바스크립트가 실행되지 않았습니다 —
-  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 191KB) 보안프로그램이 스크립트를 차단한 경우입니다.
+  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 206KB) 보안프로그램이 스크립트를 차단한 경우입니다.
   함께 배포된 <b>증여세_계산기_업무망.xlsx</b>(엑셀판)를 사용하세요.
 </div>
 <header>
-  <h1>증여세 계산기 <span class="badge">실무용 · 상증세법 기준</span> <span class="badge">통합판 v2026.08.07</span></h1>
+  <h1>증여세 계산기 <span class="badge">실무용 · 상증세법 기준</span> <span class="badge">통합판 v2026.09.05</span></h1>
   <p>증여세 계산(10년 합산·세대생략 할증·가산세)과 증여재산가액 산정(§35 저가·고가양도 / 41조의4 금전무상대부 / §42 임대용역 / §37 무상사용 / §39 증자·감자 / §45의5 특정법인)을 한 파일에서. 모든 계산은 원 단위 정수.</p>
 </header>
 
@@ -296,7 +304,7 @@
       </div>
 
       <div class="row" style="margin-top:4px">
-        <label class="fl">증여 회차 <span class="hint">증여일 + 증여재산가액. 10년내 동일인 증여는 자동 합산(§47②)</span></label>
+        <label class="fl">증여 회차 <span class="hint">증여일 + 증여재산가액. 10년내 동일인 증여는 자동 합산(§47②). <b>§71</b> 체크 = 영농자녀 감면농지(감면농지끼리만 합산)</span></label>
         <div id="giftList"></div>
         <button id="addGift" type="button">＋ 증여 회차 추가</button>
       </div>
@@ -339,6 +347,23 @@
           <div class="row">
             <label class="fl">외국납부세액공제 <span class="hint">국외재산 외국 납부분(§59)</span></label>
             <input type="text" id="creditForeign" class="won" inputmode="numeric" placeholder="0">
+          </div>
+        </div>
+      </details>
+
+      <details class="toggle-sec">
+        <summary>③ 영농자녀 증여농지 감면 — 조특법 §71 <span class="tw">▾</span></summary>
+        <div class="inner">
+          <p class="sub" style="margin-top:0">회차 목록에서 <b>§71</b>을 체크한 회차는 감면대상 농지등으로 보아 <b>감면농지끼리만 10년 합산</b>해 산출세액(할증 포함)을 내고, <b>5년간 1억원</b> 한도로 감면합니다(조특법 §133④). 한도 초과 시 가액 안분한 <b>과세부분 농지가액</b>만 일반 증여재산과 합산과세합니다(서면-2021-법규재산-2314 · 재산세제과-521 · 1454). 같은 날 과세재산과 함께 증여받으면 증여재산공제는 가액비로 안분(재산세과-2450). 감면 요건(자경 3년·직접 영농·4만㎡·용도지역·신청서)은 별도 확인.</p>
+          <div class="grid2">
+            <div class="row">
+              <label class="fl">목록 밖 §71 기감면세액 <span class="hint">회차로 입력하지 않은, 증여일 전 5년 내 감면세액</span></label>
+              <input type="text" id="priorFarmRelief" class="won" inputmode="numeric" placeholder="0">
+            </div>
+            <div class="row">
+              <label class="fl">그 감면의 증여일 <span class="hint">비우면 모든 회차의 5년 내로 간주</span></label>
+              <input type="date" id="priorFarmDate">
+            </div>
           </div>
         </div>
       </details>
@@ -503,7 +528,7 @@
 </div>
 
 <footer>
-  근거: 상속세 및 증여세법 §47·§53·§53의2·§55·§56·§57·§58·§59·§68·§69·§70·§71 / 국세기본법 §47의2·§47의3·§47의4·§48 ·
+  근거: 상속세 및 증여세법 §47·§53·§53의2·§55·§56·§57·§58·§59·§68·§69·§70·§71 / 조특법 §71·§133④·조특령 §68 / 국세기본법 §47의2·§47의3·§47의4·§48 ·
   납부지연가산세 일당율 2022.2.15.~ 0.022%, 2019.2.12.~2022.2.14. 0.025%, 그 이전 0.03%(구간 자동분할) ·
   연부연납 가산금 가산율은 납부일 현재 고시된 율(변동) — 별도 확인 · v1: 일반세율 증여재산(특례세율 미반영)
 </footer>
@@ -1331,6 +1356,13 @@ function within10y(cur,prior){
   const ta=new Date(c.getFullYear()-10,c.getMonth(),c.getDate());
   return p>=ta;
 }
+function within5y(cur,prior){
+  if(!cur||!prior) return true;
+  const c=new Date(cur+'T00:00:00'), p=new Date(prior+'T00:00:00');
+  const ta=new Date(c.getFullYear()-5,c.getMonth(),c.getDate());
+  return p>=ta;
+}
+const FARM_CAP=100000000;   // 조특법 §133④ 5년간 감면 한도
 
 function latePaySegments(unpaid, deadline, payDate){
   const start=dayNum(deadline)+1, end=dayNum(payDate);
@@ -1355,16 +1387,18 @@ function reductionRate(type,months,voluntary){
 }
 
 // ── 증여 회차 목록 ──
-function addGiftRow(date='',amount='',limit=''){
+function addGiftRow(date='',amount='',limit='',farm=false){
   const div=document.createElement('div');
   div.className='gift-item';
   div.innerHTML=`<span class="gidx"></span>
     <input type="date" class="g-date" value="${date}">
     <input type="text" class="g-amount won" inputmode="numeric" value="${amount}" placeholder="증여재산가액(원)">
     <input type="text" class="g-limit won" inputmode="numeric" value="${limit}" placeholder="이 회차 공제한도(비우면 자동)" title="이 회차에 적용할 증여재산공제 한도(비우면 관계·연령 기준 자동)">
+    <label class="g-farm${farm?' on':''}" title="조특법 §71 영농자녀등 증여농지 감면 대상 — 감면농지끼리만 10년 합산, 5년간 1억 한도 감면. 같은 날 여러 필지는 행 순서대로 감면(순위)"><input type="checkbox" class="g-farmchk"${farm?' checked':''}>§71</label>
     <button class="g-del" type="button" title="삭제">×</button>`;
   $('giftList').appendChild(div);
   for(const el of div.querySelectorAll('.g-amount,.g-limit')) el.addEventListener('input',()=>commaFormat(el));
+  const fc=div.querySelector('.g-farmchk'); fc.addEventListener('change',()=>div.querySelector('.g-farm').classList.toggle('on',fc.checked));
   div.querySelector('.g-del').addEventListener('click',()=>{ div.remove(); renumberGifts(); });
   syncRowLimit();
   renumberGifts();
@@ -1387,10 +1421,12 @@ function gatherGifts(){
     .map(it=>{
       const lv=parseW(it.querySelector('.g-limit').value);
       return {date:it.querySelector('.g-date').value, value:parseW(it.querySelector('.g-amount').value),
-              limit:(useRL && it.querySelector('.g-limit').value.trim()!=='') ? lv : null};
+              limit:(useRL && it.querySelector('.g-limit').value.trim()!=='') ? lv : null,
+              farm:it.querySelector('.g-farmchk').checked};
     })
     .filter(g=>g.value>0)
-    .sort((a,b)=> (a.date||'9999-99-99')<(b.date||'9999-99-99') ? -1 : 1);
+    .sort((a,b)=>{ const x=a.date||'9999-99-99', y=b.date||'9999-99-99'; return x===y?0:(x<y?-1:1); })  // 같은 날은 입력 순서 유지(§71 감면 순위)
+    .map((g,i)=>Object.assign(g,{inputIdx:i+1}));
 }
 
 // ── 메인 계산 ──
@@ -1398,24 +1434,41 @@ function calculate(){
   const rel=$('relation').value, minor=$('m_minor').checked, resident=$('r_yes').checked, daeseup=$('daeseup').checked;
   const marriageCredit=parseW($('marriageCredit').value), birthCredit=parseW($('birthCredit').value);
   const priorMB=parseW($('priorMB').value), creditForeign=parseW($('creditForeign').value);
+  const priorFarmRelief=parseW($('priorFarmRelief').value), priorFarmDate=$('priorFarmDate').value;
   const reportType=$('reportType').value;
   const info=relInfo(rel,minor), limit=info.limit;
 
   const gifts=gatherGifts();
   if(!gifts.length) return {empty:true};
+  const nInput=gifts.length;
 
   const warn=[];
-  let undatedMulti=false, hasExcluded=false;
+  let undatedMulti=false, hasExcluded=false, farmAny=false, farmTaxedAny=false;
   const rows=[];
 
+  // ── 2풀 구조(조특법 §71⑦·서면-2021-법규재산-2314) ──
+  //   F(감면농지 풀): §71 체크 회차끼리만 10년 합산 → 순증 산출세액 → 5년 1억 한도 감면 → 한도 초과분은
+  //     가액 안분(재산세제과-521·1454)한 '과세부분 농지가액'을 같은 날짜의 일반 회차(taxedPart)로 주입
+  //   G(일반 풀): 일반 회차 + 과세부분 회차끼리 10년 합산(기존 §47②·§53·§58 로직 그대로)
+  //   증여재산공제 장부는 두 풀이 공유 — 다른 풀이 10년 내 귀속시킨 공제만큼 한도(L)를 줄이고,
+  //   같은 날 과세재산·감면재산 동시 증여는 잔여 공제를 가액비로 안분(재산세과-2450·재산세과-33·서면4팀-1004)
   for(let i=0;i<gifts.length;i++){
-    const cur=gifts[i], isLast=(i===gifts.length-1);
-    // 10년내 종전 증여만 합산 (각 회차 기준 10년 경과분은 자동 제외, §47②)
+    const cur=gifts[i], pool=cur.farm?'F':'G';
+    const isLast=(i===gifts.length-1) && pool==='G';
+    // 같은 풀의 10년내 종전 증여만 합산 (각 회차 기준 10년 경과분은 자동 제외, §47②)
     let priorValue=0; const added=[];
-    for(let j=0;j<i;j++){
-      if(!cur.date||!gifts[j].date) undatedMulti=true;
-      if(within10y(cur.date,gifts[j].date)){ priorValue+=gifts[j].value; added.push(j); }
-      else hasExcluded=true;
+    let otherUsed=0, sameOther=0;
+    for(let j=0;j<gifts.length;j++){
+      if(j===i) continue;
+      const g=gifts[j], jp=g.farm?'F':'G';
+      if(j<i && (!cur.date||!g.date)) undatedMulti=true;
+      if(jp===pool){
+        if(j<i){ if(within10y(cur.date,g.date)){ priorValue+=g.value; added.push(j); } else hasExcluded=true; }
+        continue;
+      }
+      if(g.taxedPart || cur.taxedPart) continue;
+      if(cur.date && g.date===cur.date) sameOther+=g.value;                      // 동일자 과세·감면 재산(앞뒤 모두) → 공제 안분
+      else if(j<i && within10y(cur.date,g.date)) otherUsed+=rows[j].attrDed;     // 다른 풀이 이미 귀속시킨 공제
     }
     const merge = priorValue>=10000000;
     const priorEff = merge? priorValue : 0;
@@ -1423,10 +1476,16 @@ function calculate(){
 
     // 공제
     const L = (cur.limit!==null && cur.limit!==undefined) ? cur.limit : limit;  // 회차별 한도(입력 시) 우선
-    let dedCap=0, priorDedCap=0, mb=0;
-    if(resident){
-      dedCap=Math.min(L, taxableValue);
-      priorDedCap=Math.min(L, priorEff);
+    let dedCap=0, priorDedCap=0, mb=0, dedShare=null, Lcap=L;
+    if(resident && !cur.taxedPart){   // 과세부분 회차는 공제 없음(감면농지 회차가 이미 자기 몫을 받음)
+      let ownPrior=0; if(merge) for(const j of added) ownPrior+=rows[j].attrDed;
+      if(sameOther>0){
+        const R=Math.max(0, L-otherUsed-ownPrior);
+        dedShare=Math.round(R*cur.value/(cur.value+sameOther));
+        Lcap=ownPrior+dedShare;
+      } else Lcap=Math.max(0, L-otherUsed);
+      dedCap=Math.min(Lcap, taxableValue);
+      priorDedCap=Math.min(Lcap, priorEff);
       if(isLast && info.kind==='asc' && (marriageCredit+birthCredit)>0){
         const mbRoom=Math.max(0,MB_CAP-priorMB);
         mb=Math.min(marriageCredit+birthCredit, mbRoom, Math.max(0,taxableValue-dedCap));
@@ -1463,19 +1522,19 @@ function calculate(){
     //   → 분자 = 가산액 − 귀속액 합, 당해분 = 당해가액 − 당해 귀속액 − 혼인·출산공제 ⇒ 합계 = 합산 과세표준
     let credA=0, credBnum=0, attrThis=dedCap;
     const credDetail=[];
-    if(merge){
+    if(merge && pool==='G'){
       let applied=0, noDedValue=0;
       for(const j of added){
         credA+=rows[j].marginalTax;
-        if(rows[j].attrDed>0) applied+=rows[j].attrDed; else noDedValue+=rows[j].value;
+        if(rows[j].attrDed>0 || rows[j].taxedPart) applied+=rows[j].attrDed; else noDedValue+=rows[j].value;
       }
-      const remain=Math.max(0, dedCap-applied), pool=cur.value+noDedValue;
+      const remain=Math.max(0, dedCap-applied), dpool=cur.value+noDedValue;
       const attrNow={};
       let attrSum=0;
       for(const j of added){
         let d;
-        if(rows[j].attrDed>0) d=rows[j].attrDed;
-        else { d = pool>0 ? Math.round(remain*rows[j].value/pool) : 0; d=Math.min(d, rows[j].dedCap); }
+        if(rows[j].attrDed>0 || rows[j].taxedPart) d=rows[j].attrDed;
+        else { d = dpool>0 ? Math.round(remain*rows[j].value/dpool) : 0; d=Math.min(d, rows[j].dedCap); }
         attrNow[j]=d; attrSum+=d;
         const jBase=Math.max(0, rows[j].value-d);
         credBnum+=jBase;
@@ -1483,28 +1542,53 @@ function calculate(){
                          mTax:rows[j].marginalTax,attrDed:d,base:jBase,imputed:rows[j].attrDed<=0});
       }
       attrThis=Math.max(0, dedCap-attrSum);
+    } else if(merge){   // F 풀: 종전 감면농지에 귀속된 공제를 뺀 잔여만 당해 귀속(공제 장부 중복 방지)
+      let s=0; for(const j of added) s+=rows[j].attrDed; attrThis=Math.max(0, dedCap-s);
     }
     const ownBase=Math.max(0, cur.value-attrThis-mb);              // 당해 증여재산 고유 과세표준
-    const partGap = merge ? (credBnum+ownBase-taxBase) : 0;        // 정합 점검(반올림 오차 외 0이어야)
+    const partGap = (merge && pool==='G') ? (credBnum+ownBase-taxBase) : 0;   // 정합 점검(반올림 오차 외 0이어야)
     const credB = taxBase>0 ? Math.round(calcTax*credBnum/taxBase) : 0;
-    let creditPrepaid = Math.min(Math.min(credA, credB), totalCalc);
+    let creditPrepaid = pool==='G' ? Math.min(Math.min(credA, credB), totalCalc) : 0;
     const credPick = credDetail.length ? (creditPrepaid===totalCalc && totalCalc<Math.min(credA,credB) ? 'cap' : (credA<=credB?'A':'B')) : '';
+
+    // ── §71 감면(F 풀): 순증 산출세액 → 5년 1억 한도 → 가액 안분 ──
+    let farmMarginal=0, priorFarmCalc=0, relief=0, reliefRoom=0, reliefUsed5=0, exemptVal=0, taxedVal=0, priorFarmExt=0;
+    if(pool==='F'){
+      farmAny=true;
+      for(const j of added) priorFarmCalc+=rows[j].farmMarginal;      // 종전 감면농지분 산출세액(1454 순증 방식)
+      farmMarginal=Math.max(0, totalCalc-priorFarmCalc);
+      for(let j=0;j<i;j++) if(rows[j].pool==='F' && within5y(cur.date,gifts[j].date)) reliefUsed5+=rows[j].relief;
+      if(priorFarmRelief>0 && (!priorFarmDate || within5y(cur.date,priorFarmDate))){ priorFarmExt=priorFarmRelief; reliefUsed5+=priorFarmRelief; }
+      reliefRoom=Math.max(0, FARM_CAP-reliefUsed5);
+      relief=Math.min(farmMarginal, reliefRoom);
+      exemptVal = farmMarginal>0 ? Math.round(cur.value*relief/farmMarginal) : cur.value;   // 재산세제과-521·1454 안분
+      taxedVal = cur.value-exemptVal;
+      if(taxedVal>0) farmTaxedAny=true;
+    }
 
     const cForeign=isLast?creditForeign:0;
     const rcRate=reportCreditRate(cur.date);
     const reportTypeEff=isLast?reportType:'within';
-    const baseForReport=Math.max(0, totalCalc-creditPrepaid-cForeign);
+    const baseForReport=pool==='F' ? 0 : Math.max(0, totalCalc-creditPrepaid-cForeign);
     const creditReport=(reportTypeEff==='within')?Math.floor(baseForReport*rcRate):0;
     const creditTotal=creditPrepaid+cForeign+creditReport;
-    const netTax=Math.max(0, totalCalc-creditTotal);
+    const netTax=pool==='F' ? 0 : Math.max(0, totalCalc-creditTotal);   // 감면농지 회차의 세액은 과세부분 회차(G)에서 산출
+    const payable=pool==='F' ? 0 : Math.max(0, totalCalc-creditPrepaid-cForeign);
 
-    const marginalTax=Math.max(0,calcTax-creditPrepaid);  // 본세 한계세액(할증 제외) — 다음 회차 A 산정용
+    const marginalTax=pool==='F' ? 0 : Math.max(0,calcTax-creditPrepaid);  // 본세 한계세액(할증 제외) — 다음 회차 A 산정용
     const marginalSurcharge=surcharge;                    // 이 회차 순(純)할증 — 다음 회차 기할증 차감용(§46의3②)
-    rows.push({idx:i+1,date:cur.date,value:cur.value,priorEff,merge,addedN:added.length,taxableValue,
-      dedCap,dedLimit:L,attrDed:attrThis,ownBase,partGap,mb,totalDed,taxBase,belowMin,rate:pr.rate,prog:pr.ded,calcTax,surcharge,surRate,daeseup,
-      totalCalc,creditPrepaid,credA,credB,credBnum,credDetail,credPick,cForeign,creditReport,rcRate,reportTypeEff,creditTotal,netTax,
+    const idx = cur.taxedPart ? (cur.inputIdx+'-과세') : cur.inputIdx;
+    rows.push({idx,inputIdx:cur.inputIdx,pool,farm:!!cur.farm,taxedPart:!!cur.taxedPart,fromIdx:cur.fromIdx,
+      date:cur.date,value:cur.value,priorEff,merge,addedN:added.length,taxableValue,
+      dedCap,dedLimit:L,dedShare,sameOther,otherUsed,attrDed:attrThis,ownBase,partGap,mb,totalDed,taxBase,belowMin,rate:pr.rate,prog:pr.ded,calcTax,surcharge,surRate,daeseup,
+      totalCalc,creditPrepaid,credA,credB,credBnum,credDetail,credPick,cForeign,creditReport,rcRate,reportTypeEff,creditTotal,netTax,payable,
+      farmMarginal,priorFarmCalc,relief,reliefRoom,reliefUsed5,priorFarmExt,exemptVal,taxedVal,
       marginalTax,marginalSurcharge,grossSurcharge,priorSurcharge,isLast,info,minor,resident});
+    // 과세부분 농지가액을 같은 날짜의 일반 회차로 주입(바로 다음 순번) → 일반 증여재산과 합산과세(2314·1454 질의2)
+    if(pool==='F' && taxedVal>0) gifts.splice(i+1,0,{date:cur.date,value:taxedVal,limit:cur.limit,taxedPart:true,fromIdx:i,inputIdx:cur.inputIdx,farm:false});
   }
+  if(farmAny && info.kind!=='asc') warn.push(['red','조특법 §71 감면은 자경농민등이 <b>직계비속(영농자녀등)</b>에게 증여하는 경우에만 적용됩니다. 관계 선택을 확인하세요.']);
+  if(farmAny) warn.push(['ok','<b>§71 감면농지</b>는 일반 증여재산과 합산하지 않고 감면농지끼리만 10년 합산해 산출세액을 낸 뒤 5년간 1억원 한도로 감면했습니다(조특법 §71⑦·§133④, 서면-2021-법규재산-2314). 부·모 증여는 동일인으로 통산(§47②).'+(farmTaxedAny?' 한도 초과분은 가액 안분한 <b>과세부분 농지가액</b>을 같은 날짜의 일반 회차(“n-과세”)로 넣어 일반 증여재산과 합산과세했습니다(재산세제과-521·1454).':'')]);
   if(undatedMulti) warn.push(['warn','증여일이 비어 있는 회차가 있어 10년 합산 판정을 보수적으로 처리했습니다. 정확한 합산을 위해 증여일을 입력하세요.']);
   if(hasExcluded) warn.push(['ok','일부 종전증여가 당해 증여 기준 10년 경과로 합산에서 제외되었습니다. 남은 종전증여의 기납부세액공제는 한계세액 기준 min(A,B)로 산정했습니다(§58, 재산세과-421).']);
   if(rows.length>1 && info.kind==='asc') warn.push(['warn','연령은 단일 기준으로 전 회차에 적용됩니다. 10년 합산 회차에 미성년·성년 시기가 섞이면 회차별로 증여재산공제 한도(미성년 2천만/성년 5천만, §53)가 달라지니 그 경우 공제·과세표준을 별도 확인하세요.']);
@@ -1514,7 +1598,7 @@ function calculate(){
   let penaltyAudit=[], latePayInfo=null, reportPenalty=0, latePay=0;
   const isFraud=$('isFraud').checked, isIntl=$('isIntl').checked&&isFraud;
   const voluntary=$('voluntary').checked, months=parseInt($('monthsAfter').value,10), exemptReason=$('exemptReason').checked;
-  const autoPayable=Math.max(0, last.totalCalc-last.creditPrepaid-last.cForeign);
+  const autoPayable=last.payable;
 
   if(reportType==='none'){
     const rate=isFraud?(isIntl?0.60:0.40):0.20;
@@ -1555,7 +1639,9 @@ function calculate(){
   const grandTotal=rows.reduce((s,r)=>s+r.finalTax,0);
   if(last.belowMin) warn.push(['ok','당해 증여 과세표준이 50만원 미만이므로 증여세를 부과하지 않습니다(과세최저한, §55②).']);
 
-  return {rows,last,grandTotal,multi:rows.length>1,info,minor,resident,reportType,warn,
+  let farmRow=null; for(const x of rows) if(x.pool==='F') farmRow=x;
+  if(last.taxedPart) farmRow=rows[last.fromIdx];
+  return {rows,last,grandTotal,multi:rows.length>1,nInput,farmRow,farmAny,info,minor,resident,reportType,warn,
     deadline:deadlineFrom(last.date)};
 }
 
@@ -1578,7 +1664,8 @@ function payPlan(net){
 function detailRows(r){
   const row=(k,v,law,cls='')=>`<tr class="${cls}"><td class="k">${k}</td><td class="v">${v}</td><td class="law">${law||''}</td></tr>`;
   let h='';
-  h+=row('증여재산가액',won(r.value)+'원','');
+  if(r.pool==='F') return farmDetailRows(r);
+  h+=row(r.taxedPart?'과세부분 농지가액 (§71 한도초과분)':'증여재산가액',won(r.value)+'원',r.taxedPart?'재산세제과-521':'');
   if(r.priorEff) h+=row('＋ 10년내 재차증여 가산',won(r.priorEff)+'원','§47②','plus');
   h+=row('증여세 과세가액',won(r.taxableValue)+'원','','major');
   if(r.dedCap) h+=row('− 증여재산공제',won(r.dedCap)+'원','§53','minus');
@@ -1600,6 +1687,61 @@ function detailRows(r){
     if(r.latePay) h+=row('＋ 납부지연가산세',won(r.latePay)+'원','국기§47의4','plus');
   }
   return h;
+}
+
+// ── §71 감면농지 회차 상세 ──
+function farmDetailRows(r){
+  const row=(k,v,law,cls='')=>`<tr class="${cls}"><td class="k">${k}</td><td class="v">${v}</td><td class="law">${law||''}</td></tr>`;
+  let h='';
+  h+=row('감면농지 증여재산가액',won(r.value)+'원','조특§71');
+  if(r.priorEff) h+=row('＋ 10년내 종전 감면농지 가산',won(r.priorEff)+'원','§47②·2314','plus');
+  h+=row('감면농지 과세가액 (감면농지끼리 합산)',won(r.taxableValue)+'원','§71⑦','major');
+  if(r.dedCap) h+=row('− 증여재산공제'+(r.dedShare!==null?' <span class="sub">(동일자 과세재산과 가액 안분)</span>':''),won(r.dedCap)+'원',r.dedShare!==null?'§53·재산세과-2450':'§53','minus');
+  else if(r.resident && r.otherUsed) h+=row('증여재산공제','0원 <span class="sub">(10년내 일반 증여로 소진)</span>','§53');
+  h+=row('과세표준',won(r.taxBase)+'원','§55','major');
+  h+=row('적용세율',`${Math.round(r.rate*100)}% (누진공제 ${won(r.prog)})`,'§56');
+  h+=row('산출세액',won(r.calcTax)+'원','§56','major');
+  if(r.surcharge) h+=row(`＋ 세대생략 할증 (${Math.round(r.surRate*100)}%)`,won(r.surcharge)+'원','§57','plus');
+  if(r.priorFarmCalc) h+=row('− 종전 감면농지분 산출세액',won(r.priorFarmCalc)+'원','재산세제과-1454','minus');
+  h+=row('순증 산출세액 (감면 대상)',won(r.farmMarginal)+'원','','major');
+  h+=row('− §71 감면세액',won(r.relief)+'원',`한도잔여 ${won(r.reliefRoom)}`,'minus');
+  h+=row('감면받은 농지가액 (가액 안분)',won(r.exemptVal)+'원','재산세제과-521');
+  h+=row('과세부분 농지가액',won(r.taxedVal)+'원'+(r.taxedVal?' <span class="sub">→ 일반 합산</span>':' <span class="sub">(전액 감면)</span>'),'','major');
+  h+=row('이 회차 납부세액','0원'+(r.taxedVal?` <span class="sub">(과세부분은 ${r.inputIdx}-과세 회차에서 과세)</span>`:''),'','major');
+  return h;
+}
+
+// ── §71 감면세액 산정내역 ──
+function farmBreakdown(fr, rows){
+  if(!fr) return '';
+  const same=rows.filter(x=>x.pool==='F' && x.date===fr.date && fr.date);
+  let rank='';
+  if(same.length>1){
+    const totV=same.reduce((s,x)=>s+x.value,0), totR=same.reduce((s,x)=>s+x.relief,0);
+    let tr='';
+    same.forEach((x,k)=>{ tr+=`<tr><td>${k+1}</td><td>${x.inputIdx}회</td><td>${won(x.value)}</td><td>${won(x.relief)}</td><td>${won(Math.round(totR*x.value/totV))}</td></tr>`; });
+    rank=`<div class="sec-title">동일자 필지별 감면 순위 참고 (조특령 §68⑪)</div>
+    <div class="multi-scroll"><table class="multi-tbl">
+      <thead><tr><th>순위</th><th>회차</th><th>증여가액</th><th>순차 감면세액<br>(행 순서 적용)</th><th>가액비 안분<br>(참고)</th></tr></thead>
+      <tbody>${tr}</tbody>
+      <tr class="sum"><td colspan="2" style="text-align:right">계</td><td>${won(totV)}</td><td>${won(totR)}</td><td>${won(totR)}</td></tr>
+    </table></div>
+    <div class="note warn" style="font-size:11px">같은 날 여러 필지는 입력한 행 순서를 감면 순위로 보아 순차 적용했습니다(순위 미지정 시 가액이 높은 순으로 신청한 것으로 봄 — 조특령 §68⑪). 한도 이내면 순위가 결과에 영향을 주지 않습니다. 순위 방식과 가액비 안분 방식이 갈리는 한도 초과 사안을 정리한 예규는 확인되지 않음.</div>`;
+  }
+  const used5 = fr.reliefUsed5 ? `5년 내 기감면 ${won(fr.reliefUsed5)}${fr.priorFarmExt?` (목록 밖 ${won(fr.priorFarmExt)} 포함)`:''}` : '5년 내 기감면 없음';
+  const pick = fr.farmMarginal<=fr.reliefRoom ? '순증 산출세액 전액 감면(한도 이내)' : `<b>한도잔여 ${won(fr.reliefRoom)}원으로 제한</b>`;
+  const ratio = fr.farmMarginal>0 ? `${won(fr.value)} × (${won(fr.relief)} ÷ ${won(fr.farmMarginal)}) = <b>${won(fr.exemptVal)}원</b>` : '산출세액 0 — 전액 감면농지로 봄';
+  return rank+`<div class="sec-title">영농자녀 증여농지 감면 산정 (조특법 §71 · ${fr.inputIdx}회차)</div>
+    <div class="formula-box">
+      감면농지 과세가액 = ${won(fr.value)}${fr.priorEff?` + 10년내 종전 감면농지 ${won(fr.priorEff)}`:''} = ${won(fr.taxableValue)} → 과세표준 ${won(fr.taxBase)} → 산출세액 ${won(fr.totalCalc)}${fr.surcharge?' (할증 포함)':''}<br>
+      순증 산출세액 = ${won(fr.totalCalc)}${fr.priorFarmCalc?` − 종전 농지분 ${won(fr.priorFarmCalc)}`:''} = <b>${won(fr.farmMarginal)}원</b><br>
+      감면세액 = min(순증 산출세액, 1억 − ${used5.replace('5년 내 기감면 ','').replace('없음','0')}) = <b>${won(fr.relief)}원</b> — ${pick}<br>
+      감면받은 농지가액 = ${ratio} / 과세부분 = <b>${won(fr.taxedVal)}원</b>
+    </div>
+    <div class="note warn" style="font-size:11px">
+      감면농지는 일반 증여재산과 합산하지 않고 감면농지끼리 합산한 산출세액에서 5년간 1억원 한도로 감면하며, 한도 초과로 감면받지 못한 <b>과세부분 농지가액만</b> 10년 내 일반 증여재산과 합산과세합니다(조특법 §71⑦·§133④, 서면-2021-법규재산-2314). 과세부분 가액은 전체 가액을 산출세액 중 감면세액 비율로 안분(재산세제과-521, 재차증여는 순증액 기준 1454). 증여자가 부·모로 나뉘어도 감면한도는 통산.
+      <br><b>[주의]</b> 농지만 증여받고 한도를 초과한 경우, 521 산식(전체 농지 산출세액 − 1억)과 과세부분 가액을 다시 누진세율로 과세하는 방식(본 계산기·2314 회신)은 금액이 다를 수 있습니다 — 상급기관 확인 권장.
+    </div>`;
 }
 
 // ── 기납부세액공제(§58) 계산내역 ──
@@ -1648,7 +1790,7 @@ function render(r){
   const minorTag = (r.info.kind==='asc'||r.info.gskip) ? `<span class="pill">${r.minor?'미성년':'성년'}</span>`:'';
 
   const head=`<div class="res-head">
-    <div class="lbl">${r.multi?`자진납부할 증여세 합계 (${r.rows.length}회) `:'자진납부할 증여세 '}${minorTag}</div>
+    <div class="lbl">${r.multi?`자진납부할 증여세 합계 (${r.nInput}회) `:'자진납부할 증여세 '}${minorTag}</div>
     <div class="amt">${won(r.grandTotal)}<small> 원</small></div>
     <div class="sub2">${r.info.kr} · ${korMoney(r.grandTotal)}</div>
   </div>`;
@@ -1658,11 +1800,12 @@ function render(r){
     // 회차 요약 테이블
     let tr='';
     for(const x of r.rows){
-      tr+=`<tr class="${x.priorEff?'merged':''}">
-        <td>${x.idx}</td><td class="dt">${fmtDateShort(x.date)}</td>
+      const tag = x.pool==='F' ? '<br><span class="pill farm">§71농지</span>' : (x.taxedPart ? '<br><span class="pill taxed">과세부분</span>' : '');
+      tr+=`<tr class="${x.priorEff?'merged':''}${x.pool==='F'?' farm':''}${x.taxedPart?' taxed':''}">
+        <td>${x.idx}${tag}</td><td class="dt">${fmtDateShort(x.date)}</td>
         <td>${won(x.value)}</td><td>${won(x.taxableValue)}</td>
         <td>${won(x.taxBase)}</td><td>${won(x.calcTax+ x.surcharge)}</td>
-        <td>${x.creditPrepaid?won(x.creditPrepaid):'-'}</td>
+        <td>${x.pool==='F'?`감면 ${won(x.relief)}`:(x.creditPrepaid?won(x.creditPrepaid):'-')}</td>
         <td>${x.creditReport?won(x.creditReport):'-'}</td>
         <td class="net">${won(x.finalTax)}</td></tr>`;
     }
@@ -1671,12 +1814,14 @@ function render(r){
       <tbody>${tr}</tbody>
       <tr class="sum"><td colspan="8" style="text-align:right">합계 납부세액</td><td class="net">${won(r.grandTotal)}</td></tr>
       </table></div>`;
-    body+=`<div class="sec-title">당해(최종, ${r.rows.length}회차) 증여 상세</div>`;
+    body+=`<div class="sec-title">당해(최종, ${last.idx}회차) 증여 상세</div>`;
     body+=`<table class="calc-tbl"><tbody>${detailRows(last)}</tbody></table>`;
     body+=creditBreakdown(last);
+    body+=farmBreakdown(r.farmRow, r.rows);
   } else {
     body+=`<table class="calc-tbl"><tbody>${detailRows(last)}</tbody></table>`;
     body+=creditBreakdown(last);
+    body+=farmBreakdown(r.farmRow, r.rows);
   }
 
   // 안내
@@ -1699,7 +1844,13 @@ function render(r){
 
   // audit
   const a=[];
-  a.push(`증여세 과세가액 = 증여재산가액 ${won(last.value)}${last.priorEff?` + 10년내 가산 ${won(last.priorEff)}`:''} = ${won(last.taxableValue)}`);
+  if(last.pool==='F'){
+    a.push(`감면농지 과세가액 = ${won(last.value)}${last.priorEff?` + 10년내 종전 감면농지 ${won(last.priorEff)}`:''} = ${won(last.taxableValue)} (일반 증여재산 미합산, 조특법 §71⑦)`);
+    a.push(`과세표준 = ${won(last.taxableValue)} − 공제 ${won(last.totalDed)} = ${won(last.taxBase)} → 산출세액 ${won(last.totalCalc)}${last.surcharge?' (할증 포함)':''}`);
+    a.push(`§71 감면세액 = min(순증 ${won(last.farmMarginal)}, 한도잔여 ${won(last.reliefRoom)}) = ${won(last.relief)} → 과세부분 농지가액 ${won(last.taxedVal)}`);
+    a.push(`자진납부세액 = 0 (전액 감면)`);
+  } else {
+  a.push(`증여세 과세가액 = ${last.taxedPart?'과세부분 농지가액':'증여재산가액'} ${won(last.value)}${last.priorEff?` + 10년내 가산 ${won(last.priorEff)}`:''} = ${won(last.taxableValue)}`);
   a.push(`증여재산공제 = ${won(last.dedCap)}${last.mb?` + 혼인·출산 ${won(last.mb)}`:''}${!last.resident?' (비거주자 배제 0)':''}`);
   a.push(`과세표준 = ${won(last.taxableValue)} − ${won(last.totalDed)} = ${won(last.taxBase)}`);
   a.push(`산출세액 = ${won(last.taxBase)} × ${Math.round(last.rate*100)}% − 누진 ${won(last.prog)} = ${won(last.calcTax)}`);
@@ -1710,6 +1861,7 @@ function render(r){
   if(last.creditReport) a.push(`신고세액공제 = (${won(Math.max(0,last.totalCalc-last.creditPrepaid-last.cForeign))}) × ${Math.round(last.rcRate*100)}% = ${won(last.creditReport)}`);
   else if(last.reportTypeEff!=='within') a.push(`신고세액공제 = 0 (기한후·수정신고 배제, §69)`);
   a.push(`자진납부세액 = 산출 합계 ${won(last.totalCalc)} − 세액공제 ${won(last.creditTotal)}${last.penaltyTotal?` + 가산세 ${won(last.penaltyTotal)}`:''} = ${won(last.finalTax)}`);
+  }
   const auditBlock=`<div class="sec-title">계산명세 (당해 증여, audit)</div><div class="audit"><div class="at">상증세법 별지 제10호서식 흐름</div>`+a.map(x=>`<div>· ${x}</div>`).join('')+`</div>`;
 
   const printBtn=`<div style="padding:12px 16px;border-top:1px solid var(--line);text-align:right">
