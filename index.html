@@ -3,272 +3,306 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#13294b">
+<meta name="theme-color" content="#0B2E58">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="증여세 계산기">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>증여세 계산기 — 실무용 통합판</title>
+<title>증여세 계산기 (2026)</title>
 <style>
-  :root{
-    --navy:#13294b; --navy2:#1d3a6b; --blue:#2563a8; --accent:#0b6e4f;
-    --line:#d8dee8; --line2:#e9edf3; --bg:#f4f6f9; --card:#fff;
-    --ink:#1b2330; --muted:#5b6679; --warn:#a8410f; --warnbg:#fff4ec;
-    --red:#b3261e; --redbg:#fdecea; --okbg:#eef6f1;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic",-apple-system,system-ui,sans-serif;
-    background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55;-webkit-text-size-adjust:100%}
-  header{background:linear-gradient(110deg,var(--navy),var(--navy2));color:#fff;padding:18px 22px}
-  header h1{margin:0;font-size:19px;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
-  header h1 .badge{font-size:11px;font-weight:600;background:rgba(255,255,255,.16);
-    padding:3px 9px;border-radius:20px;letter-spacing:0}
-  header p{margin:6px 0 0;font-size:12px;color:#c4d2e8}
-  .wrap{max-width:1180px;margin:0 auto;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px}
-  @media(max-width:900px){.wrap{grid-template-columns:1fr;padding:12px}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  .card>h2{margin:0;font-size:14px;padding:12px 16px;background:#f7f9fc;border-bottom:1px solid var(--line);
-    display:flex;align-items:center;gap:8px}
-  .card>h2 .n{background:var(--navy);color:#fff;width:20px;height:20px;border-radius:50%;
-    display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex:0 0 auto}
-  .card .body{padding:14px 16px}
-  .row{margin-bottom:13px}
-  .row:last-child{margin-bottom:0}
-  label.fl{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;color:#36415a}
-  label.fl .hint{font-weight:400;color:var(--muted);font-size:11.5px;margin-left:4px}
-  input[type=text],input[type=number],input[type=date],select{width:100%;padding:9px 11px;border:1px solid var(--line);
-    border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
-  input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,168,.12)}
-  input.won{text-align:right;font-variant-numeric:tabular-nums}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media(max-width:480px){.grid2{grid-template-columns:1fr}}
-  .seg{display:flex;flex-wrap:wrap;gap:6px}
-  .seg input{display:none}
-  .seg label{flex:1;min-width:64px;text-align:center;padding:8px 6px;border:1px solid var(--line);
-    border-radius:8px;font-size:12.5px;cursor:pointer;background:#fff;transition:.12s;user-select:none}
-  .seg input:checked+label{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
-  .chk{display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px}
-  .chk input{margin-top:2px;width:16px;height:16px;flex:0 0 auto;accent-color:var(--navy)}
-  .sub{font-size:11.5px;color:var(--muted)}
-  /* 증여 회차 목록 */
-  .gift-item{display:flex;gap:6px;align-items:center;margin-bottom:7px}
-  .gift-item .gidx{flex:0 0 26px;text-align:center;font-size:11px;color:var(--navy);background:#eef2f8;
-    border-radius:6px;padding:9px 0;font-weight:700}
-  .gift-item .g-date{flex:0 0 134px;padding:9px 8px}
-  .gift-item .g-amount{flex:1;min-width:0}
-  .gift-item .g-limit{flex:0 0 104px;min-width:0;font-size:12.5px}
-  #giftList.rl-on .gift-item{flex-wrap:wrap}
-  /* 좁은 화면: 한도칸을 둘째 줄 전체 폭으로 내려 금액칸 붕괴 방지 */
-  @media(max-width:560px){#giftList.rl-on .gift-item .g-limit{flex:1 1 100%;margin-left:32px;font-size:12px}}
-  .gift-item .g-del{flex:0 0 32px;border:1px solid var(--line);background:#fff;border-radius:7px;
-    color:var(--muted);cursor:pointer;height:38px;font-size:16px;line-height:1}
-  .gift-item .g-del:hover{background:var(--redbg);color:var(--red);border-color:#f3cdc9}
-  .gift-item .g-farm{flex:0 0 auto;display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);
-    cursor:pointer;user-select:none;white-space:nowrap;padding:0 2px}
-  .gift-item .g-farm input{width:14px;height:14px;margin:0;accent-color:var(--accent)}
-  .gift-item .g-farm.on{color:var(--accent);font-weight:700}
-  @media(max-width:480px){.gift-item{gap:4px}.gift-item .gidx{flex:0 0 22px}.gift-item .g-date{flex:0 0 116px}.gift-item .g-del{flex:0 0 28px}.gift-item .g-farm{font-size:10.5px;padding:0}}
-  table.multi-tbl tr.farm td{background:#f3faf6}
-  table.multi-tbl tr.taxed td{background:#fdf8f1}
-  .pill.farm{background:var(--okbg);color:var(--accent)}
-  .pill.taxed{background:var(--warnbg);color:var(--warn)}
-  #addGift{width:100%;border:1px dashed var(--blue);background:#f4f9fe;color:var(--blue);border-radius:8px;
-    padding:10px;font-size:13px;cursor:pointer;font-weight:700;margin-top:3px}
-  #addGift:hover{background:#e9f2fc}
-  /* 거래 내역 목록 */
-  .txn-item{display:flex;gap:5px;align-items:center;margin-bottom:7px}
-  .txn-item .t-date{flex:0 0 122px;padding:9px 5px}
-  .txn-item .t-type{flex:0 0 92px;padding:9px 4px}
-  .txn-item .t-amount{flex:1;min-width:0}
-  .txn-item .t-del{flex:0 0 30px;border:1px solid var(--line);background:#fff;border-radius:7px;color:var(--muted);cursor:pointer;height:38px;font-size:16px}
-  .txn-item .t-del:hover{background:var(--redbg);color:var(--red)}
-  .txn-add{display:flex;gap:6px}
-  .txn-add button{flex:1;border:1px dashed var(--blue);background:#f4f9fe;color:var(--blue);border-radius:8px;padding:9px 4px;font-size:12.5px;cursor:pointer;font-weight:700}
-  .txn-add button:hover{background:#e9f2fc}
-  .toggle-sec{border:1px solid var(--line);border-radius:10px;margin-top:12px}
-  .toggle-sec>summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:13px;list-style:none;
-    display:flex;align-items:center;gap:8px;background:#fbfcfe;border-radius:10px}
-  .toggle-sec[open]>summary{border-bottom:1px solid var(--line);border-radius:10px 10px 0 0}
-  .toggle-sec>summary::-webkit-details-marker{display:none}
-  .toggle-sec>summary .tw{margin-left:auto;font-size:11px;color:var(--muted)}
-  .toggle-sec .inner{padding:14px}
-  .btnbar{display:flex;gap:10px;margin-top:16px}
-  button.calc{flex:1;background:var(--navy);color:#fff;border:none;padding:13px;border-radius:9px;
-    font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.5px}
-  button.calc:hover{background:#0d1f3c}
-  button.reset{background:#fff;color:var(--muted);border:1px solid var(--line);padding:13px 16px;
-    border-radius:9px;font-size:13px;cursor:pointer}
-  /* 결과 */
-  .res-head{background:var(--navy);color:#fff;padding:16px;text-align:center}
-  .res-head .lbl{font-size:12px;color:#b9c8e2}
-  .res-head .amt{font-size:30px;font-weight:800;margin-top:3px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
-  .res-head .amt small{font-size:15px;font-weight:600}
-  .res-head .sub2{font-size:11.5px;color:#9fb3d6;margin-top:4px}
-  table.calc-tbl{width:100%;border-collapse:collapse;font-size:13px}
-  table.calc-tbl td{padding:8px 14px;border-bottom:1px solid var(--line2)}
-  table.calc-tbl td.k{color:#3a455c}
-  table.calc-tbl td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
-  table.calc-tbl td.law{font-size:10.5px;color:var(--muted);width:1px;white-space:nowrap;padding-left:0}
-  table.calc-tbl tr.major td{background:#f7f9fc;font-weight:700}
-  table.calc-tbl tr.major td.k{color:var(--navy)}
-  table.calc-tbl tr.minus td.v{color:var(--accent)}
-  table.calc-tbl tr.plus td.v{color:var(--warn)}
-  table.calc-tbl tr.final td{background:var(--navy);color:#fff;font-size:15px;font-weight:800}
-  table.calc-tbl tr.final td .law{color:#9fb3d6}
-  /* 회차 테이블 */
-  .multi-scroll{overflow-x:auto}
-  table.multi-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
-  table.multi-tbl th,table.multi-tbl td{padding:7px 9px;border-bottom:1px solid var(--line2);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-  table.multi-tbl th{background:#f3f6fa;font-weight:600;color:#36415a;border-bottom:1px solid var(--line);font-size:11px;text-align:right}
-  table.multi-tbl th:first-child,table.multi-tbl td:first-child{text-align:center}
-  table.multi-tbl th:nth-child(2),table.multi-tbl td.dt{text-align:center;color:var(--muted)}
-  table.multi-tbl td.net{font-weight:700;color:var(--navy)}
-  table.multi-tbl tr.merged td{background:#fbfcfe}
-  table.multi-tbl tfoot td,table.multi-tbl tr.sum td{background:var(--navy);color:#fff;font-weight:800;border:none}
-  .sec-title{font-size:12px;font-weight:700;color:var(--muted);padding:10px 14px 4px;
-    border-top:1px solid var(--line);background:#fcfdfe}
-  .note{padding:10px 14px;font-size:12px}
-  .note.warn{background:var(--warnbg);color:var(--warn);border-top:1px solid #f3dcc9}
-  .note.red{background:var(--redbg);color:var(--red);border-top:1px solid #f3cdc9}
-  .note.ok{background:var(--okbg);color:var(--accent);border-top:1px solid #cfe6d9}
-  .note b{font-weight:700}
-  .audit{font-size:11.5px;color:#46506a;background:#fafbfd;padding:12px 16px;border-top:1px solid var(--line)}
-  .audit div{padding:2px 0;font-variant-numeric:tabular-nums}
-  .audit .at{font-weight:700;color:var(--navy);margin-bottom:4px}
-  .placeholder{padding:48px 20px;text-align:center;color:var(--muted);font-size:13px}
-  .placeholder svg{opacity:.35;margin-bottom:10px}
-  details.ref summary{cursor:pointer;font-size:13px;font-weight:600;padding:12px 16px;list-style:none;display:flex;gap:8px;align-items:center}
-  details.ref summary::-webkit-details-marker{display:none}
-  details.ref .rb{padding:0 16px 16px}
-  table.ref-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
-  table.ref-tbl th,table.ref-tbl td{border:1px solid var(--line);padding:6px 8px;text-align:left}
-  table.ref-tbl th{background:#f3f6fa;font-weight:600}
-  table.ref-tbl td.r{text-align:right;font-variant-numeric:tabular-nums}
-  .lawlist{font-size:12px;color:#3a455c;margin:0;padding-left:18px}
-  .lawlist li{margin-bottom:3px}
-  footer{max-width:1180px;margin:0 auto;padding:8px 18px 30px;font-size:11px;color:var(--muted);line-height:1.6}
-  .disc{background:#fffbe9;border:1px solid #f0e3b0;color:#7a5e16;border-radius:10px;padding:10px 14px;
-    font-size:11.5px;margin:0 18px 14px;max-width:1180px}
-  @media(min-width:1181px){.disc{margin-left:auto;margin-right:auto}}
-  .pill{display:inline-block;font-size:10.5px;background:#eef2f8;color:var(--navy);border-radius:5px;padding:1px 6px;margin-left:4px}
-  /* 탭 */
-  .tabs{max-width:1180px;margin:0 auto;padding:14px 18px 0;display:flex;gap:6px;flex-wrap:wrap}
-  .tab{padding:10px 16px;border:1px solid var(--line);border-bottom:none;border-radius:10px 10px 0 0;
-    background:#e9eef4;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
-  .tab.active{background:#fff;color:var(--navy)}
-  .tab-pane{display:none}
-  .tab-pane.active{display:block}
-  .formula-box{background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:11px 13px;
-    font-size:12px;color:#36415a;font-variant-numeric:tabular-nums;margin-top:2px;line-height:1.7}
-  .formula-box b{color:var(--navy)}
-  @media print{
-    header,.disc,.btnbar,footer,details.ref,#inputCol,#v35InputCol,#v42InputCol,#v37InputCol,#inCol,#p41In,#f45InCol,.tabs{display:none!important}
-    .wrap{grid-template-columns:1fr;padding:0}
-    body{background:#fff}.card{border:none}
-  }
-  a.tab,span.tab{text-decoration:none;display:inline-block;color:inherit}
-  /* ─ §39·§45의5 페인 보정(원본 스타일 유지) ─ */
-  #pane39 .formula-box,#pane45 .formula-box{margin:2px 14px 14px}
-  /* ─ 날짜 쉬운 입력(8자리 타이핑) — 잘못된 날짜는 빨간 테두리, 📅는 칸 안쪽 오버레이 ─ */
-  input.de-bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(179,38,30,.10)!important}
-  .de-wrap{position:relative;display:block;min-width:0}
-  .de-wrap>input:first-child{width:100%;padding-right:28px!important}
-  .de-cal{position:absolute;right:2px;top:50%;transform:translateY(-50%);border:none;background:none;
-    cursor:pointer;font-size:14px;line-height:1;padding:3px;opacity:.8}
-  .de-cal:hover{opacity:1}
-  input.de-pick{position:absolute;right:0;bottom:0;width:1px!important;height:1px;opacity:0;border:0;padding:0!important;pointer-events:none}
-  .gift-item .de-wrap{flex:0 0 134px}
-  @media(max-width:480px){.gift-item .de-wrap{flex:0 0 116px}}
-  #pane45 label.f45hsw{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);
-    white-space:nowrap;cursor:pointer;flex:0 0 auto;user-select:none}
-  #pane45 label.f45hsw.on{color:var(--warn);font-weight:600}
-  /* ─ §41의4 페인: 검증본(calc41 v2026.07.18) 고유 스타일, 페인 스코프 한정 ─ */
-  #pane41 .p41main{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr 1.1fr;gap:16px}
-  @media(max-width:860px){#pane41 .p41main{grid-template-columns:1fr}}
-  #pane41 .panel{background:#fff;border:1px solid #d5dbe6;border-radius:10px;overflow:hidden}
-  #pane41 .panel h2{margin:0;font-size:14px;padding:11px 14px;background:#f6f8fb;border-bottom:1px solid #d5dbe6}
-  #pane41 .inner{padding:13px 14px}
-  #pane41 .fld{margin-bottom:12px}
-  #pane41 .fld .lb{display:block;font-size:12.5px;font-weight:bold;color:#37425c;margin-bottom:4px}
-  #pane41 .fld .tip{font-weight:normal;color:#68718a;font-size:11.5px;margin-left:4px}
-  #pane41 table.io{width:100%;border-collapse:collapse}
-  #pane41 table.io td{padding:3px 3px 3px 0}
-  #pane41 table.io td.c1{width:138px}
-  #pane41 table.io td.c2{width:98px}
-  #pane41 table.io td.c4{width:34px}
-  /* 거래 내역 행 컨트롤 — 셀 안에 딱 맞게. iOS(웹킷) 날짜 인풋은 appearance:none이 없으면
-     고유폭 아래로 줄어들지 않고 옆 칸 위로 칠해져 겹쳐 보인다 */
-  #pane41 table.io td{padding:3px 7px 3px 0}
-  #pane41 table.io td.c4{padding-right:0}
-  #pane41 table.io input[type=date],#pane41 table.io select,#pane41 table.io input[type=text]{min-width:0;width:100%;padding:8px 7px}
-  #pane41 table.io input[type=date]{-webkit-appearance:none;appearance:none;background:#fff}
-  #pane41 table.io input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em;margin:0}
-  @media(max-width:520px){
-    #pane41 table.io td.c1{width:104px}
-    #pane41 table.io td.c2{width:76px}
-    #pane41 table.io td.c4{width:28px}
-    #pane41 table.io input[type=date],#pane41 table.io select,#pane41 table.io input[type=text]{font-size:12px;padding:8px 4px}
-    #pane41 table.io .e-del{width:26px}
-  }
-  #pane41 .e-amt{text-align:right}
-  #pane41 .e-del{width:30px;height:34px;border:1px solid #cfd6e2;background:#fff;border-radius:7px;color:#68718a;cursor:pointer;font-size:15px}
-  #pane41 .e-del:hover{background:#fdecea;color:#b3261e}
-  #pane41 #btnRow{width:100%;margin-top:6px;padding:9px;border:1px dashed #2a62a8;background:#f2f8fe;color:#2a62a8;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px}
-  #pane41 .btns{display:flex;gap:8px;margin-top:14px}
-  #pane41 #btnCalc{flex:1;background:#1b2f55;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:bold;cursor:pointer}
-  #pane41 #btnReset{background:#fff;border:1px solid #cfd6e2;border-radius:8px;padding:12px 14px;color:#68718a;cursor:pointer}
-  #pane41 .top{background:#1b2f55;color:#fff;text-align:center;padding:14px}
-  #pane41 .top .t1{font-size:12px;color:#b6c4de}
-  #pane41 .top .t2{font-size:27px;font-weight:bold;margin-top:2px}
-  #pane41 .top .t3{font-size:11.5px;color:#9fb0d0;margin-top:3px}
-  #pane41 table.rs{width:100%;border-collapse:collapse;font-size:12px}
-  #pane41 table.rs th,#pane41 table.rs td{padding:6px 8px;border-bottom:1px solid #e7ebf2;text-align:right;white-space:nowrap}
-  #pane41 table.rs th{background:#f3f6fa;color:#37425c;font-size:11px}
-  #pane41 table.rs th:first-child,#pane41 table.rs td:first-child{text-align:center}
-  #pane41 table.rs td.dt{text-align:center;color:#68718a}
-  #pane41 table.rs td.hit{font-weight:bold;color:#1b2f55}
-  #pane41 table.rs tr.sum td{background:#1b2f55;color:#fff;font-weight:bold}
-  #pane41 .h3{font-size:12px;font-weight:bold;color:#68718a;padding:10px 14px 4px;border-top:1px solid #e7ebf2;background:#fcfdfe}
-  #pane41 .msg{padding:9px 14px;font-size:12px}
-  #pane41 .msg.ok{background:#eef6f1;color:#14532d}
-  #pane41 .msg.no{background:#fff4ec;color:#a8410f}
-  #pane41 .fm{margin:8px 14px 12px;background:#f6f8fb;border:1px solid #e2e7ef;border-radius:8px;padding:10px 12px;font-size:12px;color:#37425c}
-  #pane41 #btnSendWrap{padding:12px 14px;border-top:1px solid #e7ebf2}
-  #pane41 #btnSend{width:100%;background:#0b6e4f;color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer}
-  #pane41 .empty{padding:36px 14px;text-align:center;color:#8a93a8;font-size:13px}
-  #pane41 .p41note{font-size:11.5px;color:#68718a;margin:4px 0 0}
+  /* 증여세 계산기 · 양도소득세 계산기 v8 디자인 시스템(intranet-html DESIGN.md) 적용본.
+   크롬 79 기준: flex gap 미사용(간격은 margin), grid gap만 사용, 체크박스 색 지정·:is()·inset 미사용.
+   기존 페인 마크업 클래스를 그대로 받아 v8 토큰·컴포넌트로 다시 그린다. */
+:root{--ink:#16181C;--ink2:#4A5058;--ink3:#8A9099;--line:#DDE1E6;--soft:#EEF1F4;--paper:#FBFCFD;--navy:#0B2E58;--blue:#12569E;--sky:#E9F0F8;--red:#B3261E;--redbg:#FDF0EF;
+  /* 옛 토큰 별칭: 페인 원본·인라인 스타일이 참조 */
+  --hdr:#0B2E58;--sub:#E9F0F8;--bd:#DDE1E6;--navy2:#0B2E58;--accent:#0B2E58;--line2:#EEF1F4;--bg:#fff;--card:#fff;
+  --muted:#4A5058;--warn:#B3261E;--warnbg:#FBFCFD;--okbg:#FBFCFD;}
+*{box-sizing:border-box;}
+body{font-family:"맑은 고딕","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;margin:0;background:#fff;color:var(--ink);font-size:14px;line-height:1.5;word-break:keep-all;-webkit-text-size-adjust:100%;}
+#jsDead{position:relative;z-index:40;}
+a{color:var(--blue);}
+
+/* 좌측 고정 메뉴 */
+.side{position:fixed;left:0;top:0;bottom:0;width:232px;overflow-y:auto;background:var(--paper);border-right:1px solid var(--line);padding:24px 16px;z-index:20;}
+.side header{padding:0 12px;}
+.side header h1{margin:0;font-size:17px;font-weight:bold;color:var(--navy);letter-spacing:-.01em;line-height:1.4;}
+.side header h1 .yr{display:block;font-size:12px;font-weight:normal;color:var(--ink2);letter-spacing:0;margin-top:2px;}
+.side header p{margin:8px 0 0;font-size:12px;color:var(--ink2);line-height:1.6;}
+nav{display:block;margin-top:8px;}
+nav .tabgrp{display:block;font-size:12px;font-weight:bold;color:var(--ink2);padding:0 12px 6px;margin-top:24px;}
+nav button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 12px;margin:0 0 2px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:14px;line-height:1.4;color:var(--ink);}
+nav button:hover{background:var(--soft);}
+nav button:focus{outline:2px solid #4A81C4;outline-offset:-2px;}
+nav button.active{background:var(--sky);color:var(--navy);font-weight:bold;}
+
+/* 본문 */
+main{margin-left:232px;padding:32px;max-width:1560px;}
+.printhead{display:none;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+.ptitle{margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--navy);font-size:22px;font-weight:bold;color:var(--navy);letter-spacing:-.01em;line-height:1.4;}
+.ptitle .law{font-size:13px;font-weight:normal;color:var(--ink2);margin-left:8px;letter-spacing:0;}
+.disc{margin:0 0 24px;font-size:12px;color:var(--ink2);line-height:1.6;}
+.disc b{color:var(--ink);}
+footer{margin:32px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--ink2);line-height:1.6;}
+
+/* 입력·결과 2칼럼: v8 기본은 결과 38%·최대 440px, 이 도구는 회차표(9열) 때문에 44%·최대 540px */
+.tab-pane>.wrap,#pane41 .p41main{display:flex;align-items:flex-start;}
+.tab-pane>.wrap>div:first-child,#pane41 .p41main>section:first-child{flex:1 1 0;min-width:0;}
+.tab-pane>.wrap>div:last-child,#pane41 .p41main>section:last-child{flex:0 0 44%;max-width:540px;min-width:0;margin-left:32px;position:sticky;top:24px;max-height:calc(100vh - 48px);overflow-y:auto;}
+
+/* 카드(입력 쪽: 평면, 위 2px 남색 선) */
+.card{margin:0 0 32px;}
+.card>h2{display:flex;align-items:baseline;flex-wrap:wrap;margin:0 0 12px;padding-top:16px;border-top:2px solid var(--navy);font-size:16px;font-weight:bold;color:var(--navy);line-height:1.4;}
+.card>h2>span[style]{font-size:12px!important;font-weight:normal;color:var(--ink2)!important;}
+.card>h2 .n{margin-right:6px;font-weight:bold;}
+.card .body{padding:0;}
+.row{margin-bottom:12px;}
+.row:last-child{margin-bottom:0;}
+label.fl{display:block;font-size:13px;font-weight:bold;color:var(--ink);line-height:1.4;margin-bottom:4px;}
+label.fl .hint{display:block;font-weight:normal;color:var(--ink2);font-size:12px;margin:0;}
+.sub{font-size:12px;color:var(--ink2);}
+p.sub{line-height:1.6;}
+input[type=text],input[type=number],input[type=date],select{height:34px;padding:0 8px;border:1px solid var(--ink3);border-radius:4px;background:#fff;color:var(--ink);font-size:14px;font-family:inherit;width:100%;}
+input:focus,select:focus{outline:2px solid #4A81C4;outline-offset:-1px;border-color:var(--blue);}
+input::placeholder{color:var(--ink3);}
+input.won{text-align:right;font-variant-numeric:tabular-nums;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
+.grid2>*{min-width:0;}
+.grid2>.row{margin-bottom:0;}
+/* 선택 버튼(라디오) */
+.seg{display:flex;flex-wrap:wrap;}
+.seg input{display:none;}
+.seg label{flex:1;min-width:64px;height:34px;line-height:32px;text-align:center;padding:0 6px;border:1px solid var(--ink3);border-radius:4px;font-size:13px;cursor:pointer;background:#fff;color:var(--ink);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.seg label:hover{background:var(--soft);}
+.seg input:checked+label{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:bold;}
+.seg>label~label{margin-left:6px;}
+.chk{display:flex;align-items:flex-start;cursor:pointer;font-size:13px;line-height:1.5;}
+.chk input{margin:2px 0 0;width:16px;height:16px;flex:0 0 auto;}
+.chk>*+*{margin-left:8px;}
+/* 접는 구역 */
+.toggle-sec{border-top:1px solid var(--line);margin-top:12px;}
+.toggle-sec:last-of-type{border-bottom:1px solid var(--line);}
+.toggle-sec>summary{cursor:pointer;padding:10px 0;font-weight:bold;font-size:14px;list-style:none;display:flex;align-items:center;color:var(--ink);}
+.toggle-sec>summary::-webkit-details-marker{display:none;}
+.toggle-sec>summary .tw{margin-left:auto;font-size:12px;color:var(--ink2);}
+.toggle-sec[open]>summary .tw{transform:rotate(180deg);}
+.toggle-sec .inner{padding:4px 0 16px;}
+
+/* 증여 회차 목록 */
+.gift-item{display:flex;align-items:center;margin-bottom:8px;}
+.gift-item>*+*{margin-left:6px;}
+.gift-item .gidx{flex:0 0 22px;text-align:right;font-size:12px;color:var(--ink2);font-weight:bold;font-variant-numeric:tabular-nums;}
+.gift-item .g-date{flex:0 0 134px;}
+.gift-item .g-amount{flex:1;min-width:0;}
+.gift-item .g-limit{flex:0 0 120px;min-width:0;font-size:13px;}
+#giftList.rl-on .gift-item{flex-wrap:wrap;}
+@media(max-width:560px){#giftList.rl-on .gift-item .g-limit{flex:1 1 100%;margin:6px 0 0 28px;font-size:12px;}}
+.gift-item .g-farm{flex:0 0 auto;display:flex;align-items:center;font-size:12px;color:var(--ink2);cursor:pointer;user-select:none;white-space:nowrap;padding:0 2px;}
+.gift-item .g-farm input{width:14px;height:14px;margin:0 3px 0 0;}
+.gift-item .g-farm.on{color:var(--navy);font-weight:bold;}
+@media(max-width:480px){.gift-item>*+*{margin-left:4px;}.gift-item .gidx{flex:0 0 18px;}.gift-item .g-farm{font-size:11px;padding:0;}}
+/* 작은 보조 버튼: 삭제 × 등 */
+.gift-item .g-del,#pane41 .e-del{flex:0 0 30px;width:30px;height:34px;padding:0;border:1px solid var(--ink3);background:#fff;border-radius:4px;color:var(--ink2);cursor:pointer;font-size:16px;line-height:1;font-family:inherit;}
+.gift-item .g-del:hover,#pane41 .e-del:hover{background:var(--soft);border-color:var(--ink2);}
+/* 행 추가(＋) 버튼: v8 보조 버튼 */
+#addGift,.txn-add button,#pane41 #btnRow{width:100%;min-height:34px;margin-top:4px;padding:6px 14px;border:1px solid var(--ink3);background:#fff;color:var(--ink);border-radius:4px;font-family:inherit;font-size:13px;font-weight:bold;cursor:pointer;}
+#addGift:hover,.txn-add button:hover,#pane41 #btnRow:hover{background:var(--soft);border-color:var(--ink2);}
+
+/* 하단 버튼: 자동계산이라 계산 버튼은 숨기고 초기화만 둔다 */
+.btnbar{display:flex;margin-top:16px;}
+button.calc,#pane41 #btnCalc{display:none;}
+button.reset,#pane41 #btnReset{background:#fff;color:var(--ink);border:1px solid var(--ink3);min-height:34px;padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;font-weight:bold;cursor:pointer;}
+button.reset:hover,#pane41 #btnReset:hover{background:var(--soft);border-color:var(--ink2);}
+/* 페인 원본의 인라인 버튼(보내기 등)도 v8 모서리·높이로 */
+.tab-pane button[style]{border-radius:4px!important;min-height:34px;font-family:inherit;}
+.tab-pane button[style*="--accent"]{font-size:13px!important;padding:8px 14px!important;}
+.tab-pane button[style*="--accent"]:hover{background:var(--blue)!important;}
+
+/* 결과 칼럼 카드(1px 선, 위 3px 남색, paper 바탕) */
+.tab-pane>.wrap>div:last-child>.card,#pane41 .p41main>section:last-child{margin:0 0 16px;padding:20px;border:1px solid var(--line);border-top:3px solid var(--navy);background:var(--paper);}
+.tab-pane>.wrap>div:last-child>.card>h2,#pane41 .p41main>section:last-child>h2{margin:0 0 8px;padding:0;border:0;font-size:15px;color:var(--ink);}
+/* 최종 금액(맨 위, 30px 남색) */
+.res-head,#pane41 .top{padding:0 4px 16px;margin:4px 0 8px;border-bottom:2px solid var(--ink);text-align:left;background:none;color:var(--ink);}
+.res-head .lbl,#pane41 .top .t1{font-size:13px;color:var(--ink2);}
+.res-head .amt,#pane41 .top .t2{font-size:30px;line-height:1.3;font-weight:bold;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums;}
+.res-head .amt small{font-size:18px;font-weight:bold;}
+.res-head .sub2,#pane41 .top .t3{font-size:12px;color:var(--ink2);margin-top:2px;}
+.pill{display:inline-block;font-size:11px;background:var(--sky);color:var(--navy);border-radius:4px;padding:0 6px;margin-left:4px;font-weight:bold;}
+.pill.farm,.pill.taxed{background:#fff;border:1px solid var(--ink3);color:var(--ink);}
+/* 결과 행(v8 rrow 모양) */
+table.calc-tbl{width:100%;border-collapse:collapse;font-size:14px;}
+table.calc-tbl td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top;}
+table.calc-tbl td.k{color:var(--ink2);}
+table.calc-tbl td.v{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;}
+table.calc-tbl td.law{font-size:11px;color:var(--ink2);width:1px;white-space:nowrap;padding-left:8px;}
+table.calc-tbl tr.major td.k,table.calc-tbl tr.major td.v{color:var(--ink);font-weight:bold;}
+table.calc-tbl tr.minus td.v,table.calc-tbl tr.plus td.v{color:var(--ink);}
+table.calc-tbl tr.final td{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-size:16px;font-weight:bold;color:var(--navy);}
+table.calc-tbl tr.final td .law{color:var(--ink2);}
+.sub{font-weight:normal;}
+/* 회차·명세 표 */
+.multi-scroll{overflow-x:auto;}
+table.multi-tbl,#pane41 table.rs{width:100%;border-collapse:collapse;font-size:12px;}
+table.multi-tbl{min-width:520px;}
+table.multi-tbl th,table.multi-tbl td,#pane41 table.rs th,#pane41 table.rs td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+table.multi-tbl th,#pane41 table.rs th{background:var(--sky);color:var(--navy);font-weight:bold;font-size:11px;line-height:1.35;}
+table.multi-tbl th:first-child,table.multi-tbl td:first-child,#pane41 table.rs th:first-child,#pane41 table.rs td:first-child{text-align:center;}
+table.multi-tbl th:nth-child(2),table.multi-tbl td.dt,#pane41 table.rs td.dt{text-align:center;color:var(--ink2);}
+table.multi-tbl td.net,#pane41 table.rs td.hit{font-weight:bold;color:var(--navy);}
+table.multi-tbl tr.merged td{background:#fff;}
+table.multi-tbl tr.farm td,table.multi-tbl tr.taxed td{background:var(--paper);}
+table.multi-tbl tfoot td,table.multi-tbl tr.sum td,#pane41 table.rs tr.sum td{background:#fff;color:var(--navy);font-weight:bold;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);}
+/* 결과 안 소제목(v8 rhead) */
+.sec-title,#pane41 .h3{font-size:12px;font-weight:bold;color:var(--navy);margin:16px 4px 4px;padding:0;border:0;background:none;}
+/* 안내문 */
+.card .note[style]{background:none!important;border:0!important;border-radius:0!important;padding:8px 0!important;margin-top:12px!important;}
+.note,#pane41 .msg{padding:8px 4px;font-size:12px;line-height:1.6;color:var(--ink2);background:none;border:0;border-bottom:1px solid var(--line);}
+.note b{font-weight:bold;color:var(--ink);}
+.note.warn,.note.ok,#pane41 .msg.ok{color:var(--ink2);background:none;}
+.note.red,#pane41 .msg.no{color:var(--red);background:none;font-weight:bold;}
+.note.red b{color:var(--red);}
+/* 산식 상자(v8 rdet 보조줄) */
+.formula-box,#pane41 .fm{margin:0;padding:8px 4px 8px 16px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;font-size:12px;color:var(--ink2);line-height:1.7;font-variant-numeric:tabular-nums;}
+.formula-box b,#pane41 .fm b{color:var(--ink);}
+#pane39 .formula-box,#pane45 .formula-box{margin:0;}
+/* 계산명세 */
+.audit{font-size:12px;color:var(--ink2);padding:8px 4px;border-top:1px solid var(--line);margin-top:16px;line-height:1.6;}
+.audit div{padding:1px 0;font-variant-numeric:tabular-nums;}
+.audit .at{font-weight:bold;color:var(--navy);margin-bottom:4px;}
+.placeholder,#pane41 .empty{padding:32px 4px;text-align:center;color:var(--ink2);font-size:13px;}
+.placeholder svg{display:none;}
+/* 세율표·근거(접는 참고) */
+details.ref summary{cursor:pointer;font-size:14px;font-weight:bold;padding:0;list-style:none;display:flex;align-items:center;color:var(--ink);}
+details.ref summary::-webkit-details-marker{display:none;}
+details.ref summary>*+*{margin-left:8px;}
+details.ref .rb{padding:12px 0 0;}
+table.ref-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;}
+table.ref-tbl th,table.ref-tbl td{border:0;border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top;}
+table.ref-tbl th{background:var(--sky);color:var(--navy);font-weight:bold;}
+table.ref-tbl td.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.lawlist{font-size:12px;color:var(--ink2);margin:0;padding-left:18px;line-height:1.6;}
+.lawlist li{margin-bottom:3px;}
+
+/* 날짜 쉬운 입력(8자리 타이핑) · 잘못된 날짜는 빨간 테두리, 📅는 칸 안쪽 */
+input.de-bad{border-color:var(--red)!important;background:var(--redbg)!important;}
+.de-wrap{position:relative;display:block;min-width:0;}
+.de-wrap>input:first-child{width:100%;padding-right:28px!important;letter-spacing:.5px;}
+.de-cal{position:absolute;right:2px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:14px;line-height:1;padding:3px;opacity:.7;}
+.de-cal:hover{opacity:1;}
+input.de-pick{position:absolute;right:0;bottom:0;width:1px!important;height:1px;opacity:0;border:0;padding:0!important;pointer-events:none;}
+.gift-item .de-wrap{flex:0 0 134px;}
+@media(max-width:480px){.gift-item .de-wrap{flex:0 0 116px;}}
+
+/* §45의5 지배주주등 행 */
+#pane45 label.f45hsw{display:flex;align-items:center;font-size:12px;color:var(--ink2);white-space:nowrap;cursor:pointer;flex:0 0 auto;user-select:none;}
+#pane45 label.f45hsw.on{color:var(--red);font-weight:bold;}
+.f45hr>*+*{margin-left:7px;}
+
+/* §41의4 페인(검증본 calc41 마크업) */
+#pane41 .p41main>section:first-child{background:none;border:0;}
+#pane41 .p41main>section:first-child>h2{margin:0 0 12px;padding:16px 0 0;border-top:2px solid var(--navy);font-size:16px;color:var(--navy);background:none;}
+#pane41 .inner{padding:0;}
+#pane41 .fld{margin-bottom:12px;}
+#pane41 .fld .lb{display:block;font-size:13px;font-weight:bold;color:var(--ink);margin-bottom:4px;}
+#pane41 .fld .tip{display:block;font-weight:normal;color:var(--ink2);font-size:12px;margin:0;}
+#pane41 table.io{width:100%;border-collapse:collapse;}
+#pane41 table.io td{padding:3px 7px 3px 0;}
+#pane41 table.io td.c1{width:138px;}
+#pane41 table.io td.c2{width:98px;}
+#pane41 table.io td.c4{width:34px;padding-right:0;}
+#pane41 table.io input[type=date],#pane41 table.io select,#pane41 table.io input[type=text]{min-width:0;width:100%;padding:0 7px;}
+#pane41 table.io input[type=date]{-webkit-appearance:none;appearance:none;background:#fff;}
+#pane41 table.io input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em;margin:0;}
+@media(max-width:520px){
+  #pane41 table.io td.c1{width:104px;}
+  #pane41 table.io td.c2{width:76px;}
+  #pane41 table.io td.c4{width:28px;}
+  #pane41 table.io input[type=date],#pane41 table.io select,#pane41 table.io input[type=text]{font-size:12px;padding:0 4px;}
+  #pane41 table.io .e-del{width:26px;}
+}
+#pane41 .e-amt{text-align:right;}
+#pane41 .btns{display:flex;margin-top:16px;}
+#pane41 .btns>*+*{margin-left:8px;}
+#pane41 #btnSendWrap{padding:12px 0 0;border:0;}
+#pane41 #btnSend{width:100%;min-height:34px;background:var(--navy);color:#fff;border:1px solid var(--navy);padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;font-weight:bold;cursor:pointer;}
+#pane41 #btnSend:hover{background:var(--blue);border-color:var(--blue);}
+#pane41 .p41note{font-size:12px;color:var(--ink2);margin:4px 0 0;}
+
+/* 좁은 화면 */
+@media(max-width:1180px){
+  .tab-pane>.wrap,#pane41 .p41main{display:block;}
+  .tab-pane>.wrap>div:last-child,#pane41 .p41main>section:last-child{position:static;max-width:none;max-height:none;overflow:visible;margin:24px 0 0;}
+}
+@media(max-width:900px){
+  .side{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px;}
+  nav .tabgrp{margin-top:12px;}
+  nav button{display:inline-block;width:auto;border:1px solid var(--line);margin:0 4px 4px 0;}
+  main{margin-left:0;padding:16px;}
+}
+@media(max-width:620px){.grid2{grid-template-columns:1fr;}}
+
+/* 인쇄: A4 계산내역서(결과 중심) */
+@media print{
+  @page{size:A4;margin:14mm 14mm;}
+  body{font-size:9.5pt;line-height:1.4;background:#fff;}
+  .side,#jsDead,.btnbar,button,.disc,footer,details.ref,.de-cal,
+  #inputCol,#v35InputCol,#v42InputCol,#v37InputCol,#inCol,#p41In,#f45InCol,#btnSendWrap{display:none!important;}
+  main{margin:0;padding:0;max-width:none;}
+  .printhead{display:flex;justify-content:space-between;align-items:flex-end;margin:0 0 10pt;padding-bottom:4pt;border-bottom:1px solid #000;font-size:9pt;color:#000;}
+  .printhead b{font-size:11pt;}
+  .ptitle{font-size:15pt;color:#000;border-bottom:2px solid #000;margin-bottom:8pt;padding-bottom:4pt;}
+  .tab-pane>.wrap,#pane41 .p41main{display:block;}
+  .tab-pane>.wrap>div:last-child,#pane41 .p41main>section:last-child{position:static;max-width:none;max-height:none;overflow:visible;margin:0;}
+  .tab-pane>.wrap>div:last-child>.card,#pane41 .p41main>section:last-child{border:0;border-top:2px solid #000;background:#fff;padding:6pt 0 0;}
+  .res-head .amt,#pane41 .top .t2{font-size:16pt;color:#000;}
+  .res-head,#pane41 .top{border-bottom:2px solid #000;}
+  table.calc-tbl td,table.multi-tbl td,table.multi-tbl th,.note,.formula-box{border-bottom:1px solid #8A9099;}
+  .sec-title,th,table.multi-tbl td.net{color:#000;}
+  th,table.multi-tbl th,table.ref-tbl th,#pane41 table.rs th{background:#fff;color:#000;border-top:1px solid #000;border-bottom:1px solid #000;}
+  .note.red{color:#000;}
+  .multi-scroll{overflow:visible;}
+  tr{break-inside:avoid;page-break-inside:avoid;}
+}
 </style>
 </head>
 <body>
-<div id="jsDead" style="background:#b3261e;color:#fff;padding:12px 18px;font-size:13.5px;line-height:1.6">
-  ⚠️ <b>계산 기능이 동작하지 않는 상태입니다.</b> 자바스크립트가 실행되지 않았습니다 —
-  파일이 전송 중 잘렸거나(속성에서 크기 확인: 원본 약 206KB) 보안프로그램이 스크립트를 차단한 경우입니다.
-  함께 배포된 <b>증여세_계산기_업무망.xlsx</b>(엑셀판)를 사용하세요.
-</div>
+<div id="jsDead" style="background:#c00000;color:#fff;padding:8px 12px;font-size:13px;font-weight:bold;">스크립트가 실행되지 않았습니다: 파일이 전송 중 변형되었을 수 있습니다(원본 약 211KB). 이 화면을 사진으로 남겨 주세요.</div>
+<script>
+/* 진단용 (ES5). 내부망은 파일 반출이 안 되므로 배너 사진이 유일한 디버깅 수단. 정상 실행 시 배너 숨김, 실행 중 오류 발생 시 다시 표시 */
+window.__jsErr = window.__jsErr || []; window.__blk = window.__blk || [];
+function __showErr() {
+  var b = document.getElementById("jsDead"); if (!b) return;
+  var errs = window.__jsErr, ready = (window.__ydReady === true);
+  if (!errs.length && ready) { b.style.display = "none"; return; }
+  var out = ["화면 초기화: " + (ready ? "정상" : "실패")];
+  for (var i = 0; i < errs.length && i < 5; i++) out.push(errs[i].m + (errs[i].l ? " (" + errs[i].l + "행 " + errs[i].c + "열)" : ""));
+  b.textContent = "오류 - " + out.join(" / ") + " · 이 화면을 사진으로 남겨 주세요.";
+  b.style.display = "block";
+}
+window.addEventListener("error", function (e) { window.__jsErr.push({ m: String(e.message || "err"), l: e.lineno || 0, c: e.colno || 0 }); if (window.__ydLoaded) __showErr(); });
+window.addEventListener("load", function () { window.__ydLoaded = true; __showErr(); });
+</script>
+<div class="side">
 <header>
-  <h1>증여세 계산기 <span class="badge">실무용 · 상증세법 기준</span> <span class="badge">통합판 v2026.09.05</span></h1>
-  <p>증여세 계산(10년 합산·세대생략 할증·가산세)과 증여재산가액 산정(§35 저가·고가양도 / 41조의4 금전무상대부 / §42 임대용역 / §37 무상사용 / §39 증자·감자 / §45의5 특정법인)을 한 파일에서. 모든 계산은 원 단위 정수.</p>
+  <h1>증여세 계산기 <span class="yr">2026 · v2026.10.03</span></h1>
+  <p>상증법 기준 · 10년 합산·감면·재산가액 산정 · 입력하면 자동계산 · 실무 보조용</p>
 </header>
-
-<div class="tabs">
-  <span class="tab active" data-pane="paneMain">📊 증여세 계산</span>
-  <span class="tab" data-pane="pane35">§35 저가·고가양도</span>
-  <span class="tab" data-pane="pane41">§41의4 금전무상대부 이익</span>
-  <span class="tab" data-pane="pane42">§42 임대용역</span>
-  <span class="tab" data-pane="pane37">§37 무상사용</span>
-  <span class="tab" data-pane="pane39">§39 증자·감자</span>
-  <span class="tab" data-pane="pane45">§45의5 특정법인</span>
+<nav id="tabs"></nav>
 </div>
+<main>
+<div class="printhead"><b>증여세 계산내역서</b><span>상증법 기준 · 실무 보조용</span></div>
 
 <div id="paneMain" class="tab-pane active">
-<div class="disc">⚠️ <b>업무참고용 계산 보조도구</b>입니다. 부정행위 판정·재산평가·합산 동일인 범위 등 사실관계 확정이 필요한 항목은 입력값에 따라 결과가 달라집니다. 실제 부과·결정 시 법령 원문과 사실관계로 재확인하세요.</div>
+<h1 class="ptitle">증여세 계산 <span class="law">상증법 §47·§53·§53의2·§55~§58·§68~§70 · 조특법 §71</span></h1>
+<div class="disc"><b>업무참고용 계산 보조도구</b>입니다. 부정행위 판정·재산평가·합산 동일인 범위 등 사실관계 확정이 필요한 항목은 입력값에 따라 결과가 달라집니다. 실제 부과·결정 시 법령 원문과 사실관계로 재확인하세요.</div>
 
 <div class="wrap">
   <!-- ============ 입력 ============ -->
   <div id="inputCol">
   <div class="card">
-    <h2><span class="n">1</span> 증여 내역 <span style="font-weight:400;color:var(--muted);font-size:11.5px;margin-left:auto">동일 증여자 → 동일 수증자</span></h2>
+    <h2><span class="n">①</span>증여 내역 <span style="font-weight:400;color:var(--muted);font-size:11.5px;margin-left:auto">동일 증여자 → 동일 수증자</span></h2>
     <div class="body">
       <div class="row">
         <label class="fl">증여자 → 수증자 관계</label>
@@ -299,7 +333,7 @@
       </div>
       <div class="row" id="gskipRow" style="display:none">
         <label class="chk"><input type="checkbox" id="daeseup">
-          <span><b>대습증여</b> — 증여자의 자녀(부모)가 <b>사망</b>하여 손자녀가 증여받는 경우
+          <span><b>대습증여</b>: 증여자의 자녀(부모)가 <b>사망</b>하여 손자녀가 증여받는 경우
           <span class="sub">체크 시 세대생략 할증 미적용(§57 단서)</span></span></label>
       </div>
 
@@ -311,14 +345,14 @@
       <div class="row" style="margin-top:6px">
         <label class="chk"><input type="checkbox" id="useRowLimit">
           <span><b>회차별 증여재산공제 한도 직접 입력</b>
-          <span class="sub">공제 한도가 회차마다 다를 때 사용 — 미성년(2천만·과거 1,500만)→성년(5천만) 전환, 개정 전 한도 3천만 등. 비우면 위 관계·연령 기준 한도 자동 적용</span></span></label>
+          <span class="sub">공제 한도가 회차마다 다를 때 사용: 미성년(2천만·과거 1,500만)→성년(5천만) 전환, 개정 전 한도 3천만 등. 비우면 위 관계·연령 기준 한도 자동 적용</span></span></label>
       </div>
       <p class="sub" style="margin:8px 0 0">※ 한 건만 입력하면 단건 계산. 여러 건 입력 시 증여일 순으로 정렬해 10년 합산·기납부세액공제를 자동 반영하고 회차별 세액을 산출합니다.</p>
     </div>
   </div>
 
   <div class="card" style="margin-top:16px">
-    <h2><span class="n">2</span> 추가 공제 <span style="font-weight:400;color:var(--muted);font-size:11.5px;margin-left:auto">당해(최종) 증여 기준</span></h2>
+    <h2><span class="n">②</span>추가 공제 <span style="font-weight:400;color:var(--muted);font-size:11.5px;margin-left:auto">당해(최종) 증여 기준</span></h2>
     <div class="body">
       <details class="toggle-sec">
         <summary>① 혼인·출산 증여재산공제 <span class="tw">▾</span></summary>
@@ -352,7 +386,7 @@
       </details>
 
       <details class="toggle-sec">
-        <summary>③ 영농자녀 증여농지 감면 — 조특법 §71 <span class="tw">▾</span></summary>
+        <summary>③ 영농자녀 증여농지 감면: 조특법 §71 <span class="tw">▾</span></summary>
         <div class="inner">
           <p class="sub" style="margin-top:0">회차 목록에서 <b>§71</b>을 체크한 회차는 감면대상 농지등으로 보아 <b>감면농지끼리만 10년 합산</b>해 산출세액(할증 포함)을 내고, <b>5년간 1억원</b> 한도로 감면합니다(조특법 §133④). 한도 초과 시 가액 안분한 <b>과세부분 농지가액</b>만 일반 증여재산과 합산과세합니다(서면-2021-법규재산-2314 · 재산세제과-521 · 1454). 같은 날 과세재산과 함께 증여받으면 증여재산공제는 가액비로 안분(재산세과-2450). 감면 요건(자경 3년·직접 영농·4만㎡·용도지역·신청서)은 별도 확인.</p>
           <div class="grid2">
@@ -369,13 +403,13 @@
       </details>
 
       <div class="note ok" style="border:none;border-radius:8px;margin-top:10px;font-size:11.5px;background:#f1f7f3">
-        <b>재차증여 안내</b> — 10년 경과로 합산에서 빠질 종전증여도 <b>① 증여 내역의 회차 목록에 모두 입력</b>하세요. 각 회차 기준 10년이 지난 건은 자동으로 합산에서 제외되고, 남은 종전증여의 <b>기납부세액공제</b>는 한계세액 기준 <b>min(A, B)</b>로 산정됩니다(§58, 재산세과-421·조심2008서3773).
+        <b>재차증여 안내</b>: 10년 경과로 합산에서 빠질 종전증여도 <b>① 증여 내역의 회차 목록에 모두 입력</b>하세요. 각 회차 기준 10년이 지난 건은 자동으로 합산에서 제외되고, 남은 종전증여의 <b>기납부세액공제</b>는 한계세액 기준 <b>min(A, B)</b>로 산정됩니다(§58, 재산세과-421·조심2008서3773).
       </div>
     </div>
   </div>
 
   <div class="card" style="margin-top:16px">
-    <h2><span class="n">3</span> 신고유형 · 추징(가산세) <span style="font-weight:400;color:var(--muted);font-size:11.5px;margin-left:auto">당해(최종) 증여 기준</span></h2>
+    <h2><span class="n">③</span>신고유형 · 추징(가산세) <span style="font-weight:400;color:var(--muted);font-size:11.5px;margin-left:auto">당해(최종) 증여 기준</span></h2>
     <div class="body">
       <div class="row">
         <label class="fl">신고유형</label>
@@ -391,11 +425,11 @@
         <div class="inner">
           <div class="row">
             <label class="chk"><input type="checkbox" id="isFraud">
-              <span><b>부정행위</b> (차명계좌·명의신탁·이중장부·재산은닉 등) <span class="sub">— 무신고 40%·과소신고 40%</span></span></label>
+              <span><b>부정행위</b> (차명계좌·명의신탁·이중장부·재산은닉 등) <span class="sub">: 무신고 40%·과소신고 40%</span></span></label>
           </div>
           <div class="row" id="intlRow" style="display:none">
             <label class="chk"><input type="checkbox" id="isIntl">
-              <span>국제거래 관련 부정행위 <span class="sub">— 60% 적용</span></span></label>
+              <span>국제거래 관련 부정행위 <span class="sub">: 60% 적용</span></span></label>
           </div>
           <div class="row" id="underRow" style="display:none">
             <label class="fl">과소신고 납부세액 <span class="hint">정당세액 − 당초신고세액. 비우면 자동(정당 산출세액 기준)</span></label>
@@ -405,7 +439,7 @@
           </div>
           <div class="row">
             <label class="chk"><input type="checkbox" id="voluntary">
-              <span><b>자발적</b> 기한후·수정신고 <span class="sub">— 조사착수·결정통지 전. 체크 시 경과기간별 감면 적용</span></span></label>
+              <span><b>자발적</b> 기한후·수정신고 <span class="sub">: 조사착수·결정통지 전. 체크 시 경과기간별 감면 적용</span></span></label>
           </div>
           <div class="row" id="monthsRow" style="display:none">
             <label class="fl">법정신고기한 경과 후 신고까지 경과기간</label>
@@ -422,7 +456,7 @@
           </div>
           <div class="row">
             <label class="chk"><input type="checkbox" id="exemptReason">
-              <span>과소신고가산세 면제사유 (평가차이·공제착오·재산미확정 등, §47의3④) <span class="sub">— 부정행위 시 면제 불가</span></span></label>
+              <span>과소신고가산세 면제사유 (평가차이·공제착오·재산미확정 등, §47의3④) <span class="sub">: 부정행위 시 면제 불가</span></span></label>
           </div>
           <div class="sec-title" style="border:none;padding:8px 0 4px;background:none">납부지연가산세 (§47의4)</div>
           <div class="row">
@@ -455,18 +489,18 @@
   <!-- ============ 결과 ============ -->
   <div id="resultCol">
     <div class="card">
-      <h2><span class="n">＝</span> 계산 결과</h2>
+      <h2>계산 결과</h2>
       <div id="result">
         <div class="placeholder">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
-          <div>증여 정보를 입력하고 <b>계산</b>을 누르세요.</div>
+          <div>증여 정보를 입력하면 자동으로 계산됩니다.</div>
         </div>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px">
       <details class="ref">
-        <summary>📋 세율표 · 공제한도 · 법령근거 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
+        <summary>세율표 · 공제한도 · 법령근거 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
         <div class="rb">
           <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--navy)">증여세 누진세율표 (§56)</div>
           <table class="ref-tbl">
@@ -477,7 +511,7 @@
             <tr><td>10억 초과 ~ 30억 이하</td><td>40%</td><td class="r">1억 6,000만원</td></tr>
             <tr><td>30억 초과</td><td>50%</td><td class="r">4억 6,000만원</td></tr>
           </table>
-          <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">증여재산공제 한도 — 10년 누적 (§53)</div>
+          <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">증여재산공제 한도: 10년 누적 (§53)</div>
           <table class="ref-tbl">
             <tr><th>관계</th><th>한도</th></tr>
             <tr><td>배우자</td><td class="r">6억원</td></tr>
@@ -488,7 +522,7 @@
             <tr><td>타인 (친족관계 없음)</td><td class="r">0원</td></tr>
             <tr><td>혼인·출산공제 (별도, §53의2)</td><td class="r">합산 1억원</td></tr>
           </table>
-          <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">신고세액공제율 — 증여시기별 (§69)</div>
+          <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">신고세액공제율: 증여시기별 (§69)</div>
           <table class="ref-tbl">
             <tr><th>증여시기</th><th>공제율</th></tr>
             <tr><td>2016년 이전</td><td>10%</td></tr>
@@ -509,9 +543,9 @@
             <tr><td>1개월 이내</td><td>50%</td><td>90%</td></tr>
             <tr><td>1~3개월</td><td>30%</td><td>75%</td></tr>
             <tr><td>3~6개월</td><td>20%</td><td>50%</td></tr>
-            <tr><td>6개월~1년</td><td>—</td><td>30%</td></tr>
-            <tr><td>1년~1년6개월</td><td>—</td><td>20%</td></tr>
-            <tr><td>1년6개월~2년</td><td>—</td><td>10%</td></tr>
+            <tr><td>6개월~1년</td><td>-</td><td>30%</td></tr>
+            <tr><td>1년~1년6개월</td><td>-</td><td>20%</td></tr>
+            <tr><td>1년6개월~2년</td><td>-</td><td>10%</td></tr>
           </table>
           <ul class="lawlist">
             <li>신고·납부기한: 증여일이 <b>속하는 달의 말일부터 3개월</b> 이내 (§68)</li>
@@ -530,17 +564,18 @@
 <footer>
   근거: 상속세 및 증여세법 §47·§53·§53의2·§55·§56·§57·§58·§59·§68·§69·§70·§71 / 조특법 §71·§133④·조특령 §68 / 국세기본법 §47의2·§47의3·§47의4·§48 ·
   납부지연가산세 일당율 2022.2.15.~ 0.022%, 2019.2.12.~2022.2.14. 0.025%, 그 이전 0.03%(구간 자동분할) ·
-  연부연납 가산금 가산율은 납부일 현재 고시된 율(변동) — 별도 확인 · v1: 일반세율 증여재산(특례세율 미반영)
+  연부연납 가산금 가산율은 납부일 현재 고시된 율(변동): 별도 확인 · v1: 일반세율 증여재산(특례세율 미반영)
 </footer>
 </div><!-- /paneMain -->
 
 <div id="pane35" class="tab-pane">
-<div class="disc">⚠️ <b>산정 보조도구</b> — 시가는 별도 확정 기준(§60)에 따르며 여기서는 입력값으로 받습니다. 비특수관계인 거래는 <b>거래관행상 정당한 사유가 없을 때</b>만 과세됩니다(§35②).</div>
+<h1 class="ptitle">저가양수·고가양도 <span class="law">상증법 §35 · 상증령 §26</span></h1>
+<div class="disc"><b>산정 보조도구</b>: 시가는 별도 확정 기준(§60)에 따르며 여기서는 입력값으로 받습니다. 비특수관계인 거래는 <b>거래관행상 정당한 사유가 없을 때</b>만 과세됩니다(§35②).</div>
 
 <div class="wrap">
   <div id="v35InputCol">
     <div class="card">
-      <h2><span class="n">1</span> 거래 정보</h2>
+      <h2><span class="n">①</span>거래 정보</h2>
       <div class="body">
         <div id="box35">
         <div class="row">
@@ -571,7 +606,7 @@
         </div>
         <div class="row" id="v35NonSpecialNote" style="display:none">
           <label class="chk"><input type="checkbox" id="v35Just" checked>
-            <span>거래관행상 <b>정당한 사유가 없음</b> <span class="sub">— 비특수관계인은 정당한 사유 없을 때만 과세(§35②). 입증책임은 과세관청</span></span></label>
+            <span>거래관행상 <b>정당한 사유가 없음</b> <span class="sub">: 비특수관계인은 정당한 사유 없을 때만 과세(§35②). 입증책임은 과세관청</span></span></label>
         </div>
         <div class="row">
           <label class="fl">양수일 / 양도일 <span class="hint">증여시기(대금청산일 등). 선택</span></label>
@@ -588,12 +623,12 @@
 
   <div id="v35ResultCol">
     <div class="card">
-      <h2><span class="n">＝</span> 산정 결과</h2>
-      <div id="v35Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div></div>
+      <h2>산정 결과</h2>
+      <div id="v35Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div></div>
     </div>
     <div class="card" style="margin-top:16px">
       <details class="ref">
-        <summary>📋 §35 과세요건·산정 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
+        <summary>§35 과세요건·산정 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
         <div class="rb">
           <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--navy)">특수관계인 간 (상증법 §35①)</div>
           <table class="ref-tbl">
@@ -612,7 +647,7 @@
             <li>과세요건 미충족 시 증여세 과세 안 함. 증여재산가액이 음수면 0</li>
             <li>특수관계 판단: 매매계약일 기준(상증령 §2의2) · 증여시기: 양수일·양도일(대금청산일 등)</li>
             <li>2004.1.1. 이후 양도분부터 비특수관계인 거래도 과세(거래관행상 정당한 사유 없는 경우)</li>
-            <li>고가양도는 양도자에게 양도소득세와 중복될 수 있음 — 이중과세 조정 별도 검토</li>
+            <li>고가양도는 양도자에게 양도소득세와 중복될 수 있음: 이중과세 조정 별도 검토</li>
           </ul>
         </div>
       </details>
@@ -623,7 +658,8 @@
 </div><!-- /pane35 -->
 
 <div id="pane41" class="tab-pane">
-<div class="disc">⚠️ <b>산정 보조도구</b> — 금전 무상대부 이익(상증법 41조의4). 거래 내역(차입·원금상환·이자지급)만 입력하면 1년 단위 갱신·선입선출 충당·적수 안분·소급 1년 합산(43조 2항)까지 자동 산정합니다. 적정이자율 연 4.6%(2016.3.20 이전 8.5%). 검증본 로직 v2026.07.18.</div>
+<h1 class="ptitle">금전무상대부 이익 <span class="law">상증법 §41의4 · 상증령 §31의4</span></h1>
+<div class="disc"><b>산정 보조도구</b>: 금전 무상대부 이익(상증법 41조의4). 거래 내역(차입·원금상환·이자지급)만 입력하면 1년 단위 갱신·선입선출 충당·적수 안분·소급 1년 합산(43조 2항)까지 자동 산정합니다. 적정이자율 연 4.6%(2016.3.20 이전 8.5%). 검증본 로직 v2026.07.18.</div>
 <div class="p41main">
   <section class="panel" id="p41In">
     <h2>1. 거래 정보</h2>
@@ -660,7 +696,7 @@
   </section>
   <section class="panel">
     <h2>2. 산정 결과</h2>
-    <div id="out"><div class="empty">거래 내역을 입력하고 <b>산정</b>을 누르세요.</div></div>
+    <div id="out"><div class="empty">거래 내역을 입력하면 자동으로 산정됩니다.</div></div>
   </section>
 </div>
 <footer>근거: 상증법 41조의4·시행령 31조의4(적정이자율·1천만원 기준, 1년 단위 의제), 43조 2항(소급 1년 합산),
@@ -668,12 +704,13 @@
 </div><!-- /pane41 -->
 
 <div id="pane42" class="tab-pane">
-<div class="disc">⚠️ <b>산정 보조도구</b> — 임대용역 시가 = 평가액×2%(보증금 차감 없음). <b>무상 1천만원↑ / 저가 차액 시가30%↑</b>일 때 과세, 개시일부터 1년 단위 재과세(§42②). 비특수관계인은 정당한 사유가 없을 때만 과세.</div>
+<h1 class="ptitle">부동산 임대용역 <span class="law">상증법 §42 · 상증령 §32</span></h1>
+<div class="disc"><b>산정 보조도구</b>: 임대용역 시가 = 평가액×2%(보증금 차감 없음). <b>무상 1천만원↑ / 저가 차액 시가30%↑</b>일 때 과세, 개시일부터 1년 단위 재과세(§42②). 비특수관계인은 정당한 사유가 없을 때만 과세.</div>
 
 <div class="wrap">
   <div id="v42InputCol">
     <div class="card">
-      <h2><span class="n">1</span> 거래 정보</h2>
+      <h2><span class="n">①</span>거래 정보</h2>
       <div class="body">
         <div id="box42">
           <div class="row">
@@ -685,7 +722,7 @@
           </div>
           <div class="row" id="rentNonSpecialNote" style="display:none">
             <label class="chk"><input type="checkbox" id="rentJust" checked>
-              <span>거래관행상 <b>정당한 사유가 없음</b> <span class="sub">— 비특수관계인은 정당한 사유 없을 때만 과세(§42③)</span></span></label>
+              <span>거래관행상 <b>정당한 사유가 없음</b> <span class="sub">: 비특수관계인은 정당한 사유 없을 때만 과세(§42③)</span></span></label>
           </div>
           <div class="row">
             <label class="fl">부동산 평가액 <span class="hint">상증세법 제4장(§60~§66) 평가가액</span></label>
@@ -723,12 +760,12 @@
 
   <div id="v42ResultCol">
     <div class="card">
-      <h2><span class="n">＝</span> 산정 결과</h2>
-      <div id="v42Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div></div>
+      <h2>산정 결과</h2>
+      <div id="v42Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div></div>
     </div>
     <div class="card" style="margin-top:16px">
       <details class="ref">
-        <summary>📋 §42 과세요건·산정 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
+        <summary>§42 과세요건·산정 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
         <div class="rb">
           <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">부동산 임대용역 (상증법 §42)</div>
           <table class="ref-tbl">
@@ -739,7 +776,7 @@
             <tr><td>수증자 / 증여시기</td><td>임차인 / 임대개시일(1년 단위)</td></tr>
           </table>
           <ul class="lawlist">
-            <li><b>증여세 시가(평가액×2%)와 임대인 부당행위 시가는 다름</b> — 부당행위 시가 = (평가액×50%−보증금)×3.1%(소득세법 §98④·법인세법 §89④1호)</li>
+            <li><b>증여세 시가(평가액×2%)와 임대인 부당행위 시가는 다름</b>: 부당행위 시가 = (평가액×50%−보증금)×3.1%(소득세법 §98④·법인세법 §89④1호)</li>
             <li>임대 외 일반용역 시가는 원가+원가×수익률(법인세법 §89④2호 준용)</li>
             <li>§37 부동산 무상사용(평가액×2%×3.79079, 5년·1억원)과는 별개 조문</li>
             <li>비특수관계인은 거래관행상 정당한 사유 없을 때만 과세(§42③)</li>
@@ -753,12 +790,13 @@
 </div><!-- /pane42 -->
 
 <div id="pane37" class="tab-pane">
-<div class="disc">⚠️ <b>산정 보조도구</b> — 5년 무상사용이익 = 평가액×2%×3.79079(연금현가). <b>1억원 이상</b>만 과세(평가액 약 13.2억↑), 개시일이 증여일·5년 단위 재과세(§37). 동거주택 제외. 비특수관계인은 정당한 사유가 없을 때만 과세.</div>
+<h1 class="ptitle">부동산 무상사용 <span class="law">상증법 §37 · 상증령 §27</span></h1>
+<div class="disc"><b>산정 보조도구</b>: 5년 무상사용이익 = 평가액×2%×3.79079(연금현가). <b>1억원 이상</b>만 과세(평가액 약 13.2억↑), 개시일이 증여일·5년 단위 재과세(§37). 동거주택 제외. 비특수관계인은 정당한 사유가 없을 때만 과세.</div>
 
 <div class="wrap">
   <div id="v37InputCol">
     <div class="card">
-      <h2><span class="n">1</span> 거래 정보</h2>
+      <h2><span class="n">①</span>거래 정보</h2>
       <div class="body">
         <div id="box37">
           <div class="row">
@@ -770,7 +808,7 @@
           </div>
           <div class="row" id="useNonSpecialNote" style="display:none">
             <label class="chk"><input type="checkbox" id="useJust" checked>
-              <span>거래관행상 <b>정당한 사유가 없음</b> <span class="sub">— 비특수관계인은 정당한 사유 없을 때만 과세(§37③)</span></span></label>
+              <span>거래관행상 <b>정당한 사유가 없음</b> <span class="sub">: 비특수관계인은 정당한 사유 없을 때만 과세(§37③)</span></span></label>
           </div>
           <div class="row">
             <label class="fl">부동산 평가액 <span class="hint">상증세법 제4장(§60~§66) 평가가액</span></label>
@@ -778,7 +816,7 @@
           </div>
           <div class="row">
             <label class="chk"><input type="checkbox" id="useCohabit">
-              <span>소유자와 <b>함께 거주하는 주택</b>(+부수토지) <span class="sub">— 체크 시 §37 과세 제외(비과세)</span></span></label>
+              <span>소유자와 <b>함께 거주하는 주택</b>(+부수토지) <span class="sub">: 체크 시 §37 과세 제외(비과세)</span></span></label>
           </div>
           <div class="grid2">
             <div class="row">
@@ -802,12 +840,12 @@
 
   <div id="v37ResultCol">
     <div class="card">
-      <h2><span class="n">＝</span> 산정 결과</h2>
-      <div id="v37Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div></div>
+      <h2>산정 결과</h2>
+      <div id="v37Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div></div>
     </div>
     <div class="card" style="margin-top:16px">
       <details class="ref">
-        <summary>📋 §37 과세요건·산정 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
+        <summary>§37 과세요건·산정 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
         <div class="rb">
           <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">부동산 무상사용 (상증법 §37)</div>
           <table class="ref-tbl">
@@ -817,7 +855,7 @@
             <tr><td>수증자 / 증여시기</td><td>사용자 / 개시일(5년 단위 재과세)</td></tr>
           </table>
           <ul class="lawlist">
-            <li><b>부동산을 직접 점유·무상사용</b>(거주·영업·부지)은 §37 — 임대용역(§42)·저가사용과 구분</li>
+            <li><b>부동산을 직접 점유·무상사용</b>(거주·영업·부지)은 §37: 임대용역(§42)·저가사용과 구분</li>
             <li>소유자와 <b>함께 거주하는 주택+부수토지는 과세 제외</b>(비과세)</li>
             <li>§37(부동산 자체 무상사용) vs §42(임대용역 무상·저가): §42①1호가 부동산 등 명문 제외</li>
             <li>임차인 증여세(§37) 외 <b>임대인 소득세 부당행위계산부인</b> 병행 검토</li>
@@ -832,12 +870,13 @@
 </div><!-- /pane37 -->
 
 <div id="pane39" class="tab-pane">
-<div class="disc">⚠️ <b>산정 보조도구</b> — 1주당 평가가액(시가)은 §60·§63에 따라 별도 확정한 값을 입력합니다. 유가증권·코스닥 상장법인이 유가증권 모집방법(50인 이상 청약 권유 등)으로 배정하는 경우는 §39①1의 &lsquo;배정&rsquo;에서 제외되어 과세되지 않습니다(가목 괄호·령 §29③ — 다·라목 직접배정에도 미침).</div>
+<h1 class="ptitle">불균등 증자·감자 <span class="law">상증법 §39·§39의2 · 상증령 §29·§29의2</span></h1>
+<div class="disc"><b>산정 보조도구</b>: 1주당 평가가액(시가)은 §60·§63에 따라 별도 확정한 값을 입력합니다. 유가증권·코스닥 상장법인이 유가증권 모집방법(50인 이상 청약 권유 등)으로 배정하는 경우는 §39①1의 &lsquo;배정&rsquo;에서 제외되어 과세되지 않습니다(가목 괄호·령 §29③: 다·라목 직접배정에도 미침).</div>
 
 <div class="wrap">
   <div id="inCol">
     <div class="card">
-      <h2><span class="n">1</span> 자본거래 정보</h2>
+      <h2><span class="n">①</span>자본거래 정보</h2>
       <div class="body">
         <div class="row">
           <label class="fl">거래 구분</label>
@@ -950,7 +989,7 @@
             </div>
           </div>
           <div class="row" id="rowPr">
-            <label class="fl">증자 후 1주당 평가가액(실제) <span class="hint">상장법인 — 저가발행은 산식가액과 비교해 적은 값, 고가발행은 큰 값 적용</span></label>
+            <label class="fl">증자 후 1주당 평가가액(실제) <span class="hint">상장법인: 저가발행은 산식가액과 비교해 적은 값, 고가발행은 큰 값 적용</span></label>
             <input type="text" id="jPr" class="won" inputmode="numeric" placeholder="권리락 후 평가액">
           </div>
           <div class="row">
@@ -1023,21 +1062,21 @@
 
   <div id="resCol">
     <div class="card">
-      <h2><span class="n">＝</span> 산정 결과</h2>
-      <div id="v39Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>자본거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div></div>
+      <h2>산정 결과</h2>
+      <div id="v39Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>자본거래 정보를 입력하면 자동으로 산정됩니다.</div></div></div>
     </div>
     <div class="card" style="margin-top:16px">
       <details class="ref">
-        <summary>📋 §39·§39의2 과세요건 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
+        <summary>§39·§39의2 과세요건 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
         <div class="rb">
-          <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--navy)">증자 — 저가 발행 (§39①1)</div>
+          <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--navy)">증자: 저가 발행 (§39①1)</div>
           <table class="ref-tbl">
             <tr><th>유형</th><th>수증자</th><th>증여자</th><th>특수관계</th><th>과세 최소기준</th></tr>
             <tr><td>실권주 재배정 (가목)</td><td>실권주 배정받은 자</td><td>실권 주주</td><td>불요</td><td>없음</td></tr>
             <tr><td>실권 처리 (나목)</td><td>신주 인수 주주</td><td>실권 주주</td><td>필요</td><td>차액≥증자후가액 30% 또는 이익≥3억</td></tr>
             <tr><td>제3자·초과배정 (다·라목)</td><td>배정받은 자</td><td>기존 주주</td><td>불요</td><td>없음</td></tr>
           </table>
-          <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">증자 — 고가 발행 (§39①2)</div>
+          <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">증자: 고가 발행 (§39①2)</div>
           <table class="ref-tbl">
             <tr><th>유형</th><th>수증자</th><th>증여자</th><th>특수관계</th><th>과세 최소기준</th></tr>
             <tr><td>실권주 재배정 (가목)</td><td>실권 주주</td><td>실권주 인수자</td><td>필요</td><td>없음</td></tr>
@@ -1054,12 +1093,12 @@
             <li><b>증자 후 1주당 가액</b> = [(증자 전 평가가액×증자 전 총수) + (인수가액×증가 주식수)] ÷ (증자 전 총수+증가 주식수). 실권 처리 유형의 저가발행은 <b>균등증자 가정</b> 주식수 사용</li>
             <li>상장법인 특례: 저가발행은 증자 후 실제 평가액이 산식가액보다 <b>적으면</b> 실제 평가액, 고가발행은 <b>크면</b> 실제 평가액 적용</li>
             <li>증자 전·후 1주당 가액이 <b>모두 0 이하</b>면 이익 없음(령 §29② 단서)</li>
-            <li>저가 발행(§39①1) 적용 시 증여자인 <b>소액주주</b>(지분 1% 미만 + 액면총액 3억 미만)가 2인 이상이면 1인으로 보아 계산(§39②·령 §29⑤) — 증여자별 구분 없이 합산</li>
-            <li>감자의 <b>1주당 평가액은 감자 전(주총결의일 현재) 시가</b> — 증자와 달리 &lsquo;감자 후 1주당 가액&rsquo;을 가중평균으로 다시 구하지 않는다. 산식에 이미 &lsquo;감자후 지분비율&rsquo;이 들어 있어 감자 효과가 반영되며, 평가액까지 감자 후로 잡으면 이익이 감자전주식수÷감자후주식수 배로 과대계상된다</li>
+            <li>저가 발행(§39①1) 적용 시 증여자인 <b>소액주주</b>(지분 1% 미만 + 액면총액 3억 미만)가 2인 이상이면 1인으로 보아 계산(§39②·령 §29⑤): 증여자별 구분 없이 합산</li>
+            <li>감자의 <b>1주당 평가액은 감자 전(주총결의일 현재) 시가</b>: 증자와 달리 &lsquo;감자 후 1주당 가액&rsquo;을 가중평균으로 다시 구하지 않는다. 산식에 이미 &lsquo;감자후 지분비율&rsquo;이 들어 있어 감자 효과가 반영되며, 평가액까지 감자 후로 잡으면 이익이 감자전주식수÷감자후주식수 배로 과대계상된다</li>
             <li>감자의 <b>대주주등</b>: 특수관계인 지분 합산 1% 이상 또는 액면총액 3억 이상 주주(령 §28②)</li>
             <li>고가 소각은 <b>1주당 평가액이 액면가액(대가가 액면가액 미달 시 그 대가)에 미달</b>하는 경우로 한정</li>
             <li>증여일: 증자는 주식대금 납입일(납입일 전 신주인수권증서 교부 시 교부일, 상장·코스닥 주주배정은 권리락일), 감자는 주주총회 결의일</li>
-            <li>§39·§39의2 이익은 합산배제 대상이 아님 — 동일 증여자 10년 내 증여와 <b>합산</b>(§47②)</li>
+            <li>§39·§39의2 이익은 합산배제 대상이 아님: 동일 증여자 10년 내 증여와 <b>합산</b>(§47②)</li>
           </ul>
         </div>
       </details>
@@ -1070,12 +1109,13 @@
 </div><!-- /pane39 -->
 
 <div id="pane45" class="tab-pane">
-<div class="disc">⚠️ <b>산정 보조도구</b> — 상증세법 45조의5 특정법인과의 거래를 통한 이익의 증여 의제. 수증자는 지배주주와 그 친족(지배주주등) <b>각각</b>이고, 개인별 증여의제이익이 <b>1억원 이상</b>인 사람만 과세됩니다(령 §34의5⑤). 시가는 상증법 §60이 아니라 <b>법인세법 시행령 §89</b>(부당행위 시가) 기준으로 별도 확정한 값을 입력하세요.</div>
+<h1 class="ptitle">특정법인과의 거래이익 <span class="law">상증법 §45의5 · 상증령 §34의5</span></h1>
+<div class="disc"><b>산정 보조도구</b>: 상증세법 45조의5 특정법인과의 거래를 통한 이익의 증여 의제. 수증자는 지배주주와 그 친족(지배주주등) <b>각각</b>이고, 개인별 증여의제이익이 <b>1억원 이상</b>인 사람만 과세됩니다(령 §34의5⑤). 시가는 상증법 §60이 아니라 <b>법인세법 시행령 §89</b>(부당행위 시가) 기준으로 별도 확정한 값을 입력하세요.</div>
 
 <div class="wrap">
   <div id="f45InCol">
     <div class="card">
-      <h2><span class="n">1</span> 거래 정보</h2>
+      <h2><span class="n">①</span>거래 정보</h2>
       <div class="body">
         <div class="row">
           <label class="fl">거래 유형</label>
@@ -1094,7 +1134,7 @@
         <div id="f45BoxMkt">
           <div class="grid2">
             <div class="row">
-              <label class="fl">시가 <span class="hint">법인세법 시행령 §89 — 별도 확정</span></label>
+              <label class="fl">시가 <span class="hint">법인세법 시행령 §89: 별도 확정</span></label>
               <input type="text" id="f45Mkt" class="won" inputmode="numeric" placeholder="예: 1,000,000,000">
             </div>
             <div class="row">
@@ -1132,7 +1172,7 @@
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h2><span class="n">2</span> 법인세 상당액 (령 §34의5④2호)</h2>
+      <h2><span class="n">②</span>법인세 상당액 (령 §34의5④2호)</h2>
       <div class="body">
         <div class="row">
           <label class="fl">각 사업연도 소득금액 <span class="hint">법인세법 §14(익금−손금, 이월결손금 공제 전) · 경정 있으면 경정 후 확정치 · 결손이면 0</span></label>
@@ -1144,25 +1184,25 @@
             <input type="text" id="f45CorpTax" class="won" inputmode="numeric" placeholder="예: 180,000,000">
           </div>
           <div class="row">
-            <label class="fl">공제·감면 세액 <span class="hint">실제 공제·감면된 합계(최저한세 반영 후) — 기납부세액·가산세 제외</span></label>
+            <label class="fl">공제·감면 세액 <span class="hint">실제 공제·감면된 합계(최저한세 반영 후): 기납부세액·가산세 제외</span></label>
             <input type="text" id="f45CorpCredit" class="won" inputmode="numeric" placeholder="예: 0">
           </div>
         </div>
         <p class="sub" style="margin:2px 0 0">거래이익이 소득금액에서 차지하는 비율(1 한도)을 산출세액(공제·감면 차감 후)에 곱해 특정법인의 이익에서 뺍니다.
         무상 수증·채무 면제·고가 양도·자본거래 이익은 익금이므로 당초 신고에 빠졌으면 <b>법인세 경정 후 수치</b>를 입력하고,
         저가 양수·용역 무상/저가 수령(금전 무상·저리 대부 포함) 이익은 익금이 아니므로 소득금액에 <b>가산하지 않습니다</b>(신고·경정된 소득금액 그대로).
-        공제·감면은 조정계산서의 최저한세 적용대상+적용제외 공제감면 합계 — 중간예납 등 기납부세액을 넣으면 상당액이 과소계산됩니다.</p>
+        공제·감면은 조정계산서의 최저한세 적용대상+적용제외 공제감면 합계: 중간예납 등 기납부세액을 넣으면 상당액이 과소계산됩니다.</p>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h2><span class="n">3</span> 지배주주등 (수증자)</h2>
+      <h2><span class="n">③</span>지배주주등 (수증자)</h2>
       <div class="body">
         <div class="row">
           <label class="fl">개인별 주식보유비율 <span class="hint">거래일 현재 직접+간접 합산(%). 간접 = 각 단계 보유비율의 곱(령 §34의3②)</span></label>
           <div id="f45Holders"></div>
           <button type="button" id="f45AddHolder" style="width:100%;margin-top:2px;padding:9px;border:1px dashed var(--blue);background:#f2f8fe;color:var(--blue);border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">＋ 지배주주등 추가</button>
-          <p class="sub" style="margin:6px 0 0">지배주주와 그 친족 각각을 행으로 입력합니다. 전원 합계가 30% 이상이어야 특정법인입니다. 특정법인과 거래한 <b>상대방(증여자)</b>이 지배주주등에 포함되면 그 행의 <b>거래상대방</b>을 체크하세요 — 본인이 증여한 몫은 과세제외됩니다(서면4팀-1078).</p>
+          <p class="sub" style="margin:6px 0 0">지배주주와 그 친족 각각을 행으로 입력합니다. 전원 합계가 30% 이상이어야 특정법인입니다. 특정법인과 거래한 <b>상대방(증여자)</b>이 지배주주등에 포함되면 그 행의 <b>거래상대방</b>을 체크하세요: 본인이 증여한 몫은 과세제외됩니다(서면4팀-1078).</p>
         </div>
       </div>
     </div>
@@ -1175,20 +1215,20 @@
 
   <div id="f45ResCol">
     <div class="card">
-      <h2><span class="n">＝</span> 산정 결과</h2>
-      <div id="f45Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div></div>
+      <h2>산정 결과</h2>
+      <div id="f45Result"><div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div></div>
     </div>
     <div class="card" style="margin-top:16px">
       <details class="ref">
-        <summary>📋 §45의5 과세요건 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
+        <summary>§45의5 과세요건 요약 <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:11px">접기/펼치기</span></summary>
         <div class="rb">
           <table class="ref-tbl">
             <tr><th style="width:92px">구분</th><th>내용</th></tr>
-            <tr><td>특정법인</td><td>지배주주등(지배주주+그 친족)의 직접·간접 보유비율 합계 <b>30% 이상</b>인 법인 — 내국·외국법인(외국법인은 2025.2.28. 이후)</td></tr>
-            <tr><td>거래상대방</td><td><b>지배주주 및 그 특수관계인</b>(2025.12.23. 개정 반영 — 종전은 &lsquo;지배주주의 특수관계인&rsquo;으로 본인 제외). 특수관계는 쌍방관계로 판단</td></tr>
-            <tr><td>수증자</td><td>지배주주등 <b>각각</b> — 개인별 증여의제이익 1억원 이상만 과세(령 §34의5⑤). 거래상대방(증여자) 본인이 지배주주등이면 <b>본인 지분 해당분은 과세제외</b>(서면4팀-1078) · 지배주주등이 아닌 주주는 애초에 대상 아님</td></tr>
-            <tr><td>증여일</td><td><b>거래한 날</b>. 1회성 거래는 1회로 확정 — 매년 반복 구성 불가(대법원 2025두30103)</td></tr>
-            <tr><td>시가</td><td><b>법인세법 시행령 §89</b>(령 §34의5⑧) — 상증법 §60·§49 아님. 단일 감정가액도 인정(조심 2023서8044)</td></tr>
+            <tr><td>특정법인</td><td>지배주주등(지배주주+그 친족)의 직접·간접 보유비율 합계 <b>30% 이상</b>인 법인: 내국·외국법인(외국법인은 2025.2.28. 이후)</td></tr>
+            <tr><td>거래상대방</td><td><b>지배주주 및 그 특수관계인</b>(2025.12.23. 개정 반영: 종전은 &lsquo;지배주주의 특수관계인&rsquo;으로 본인 제외). 특수관계는 쌍방관계로 판단</td></tr>
+            <tr><td>수증자</td><td>지배주주등 <b>각각</b>: 개인별 증여의제이익 1억원 이상만 과세(령 §34의5⑤). 거래상대방(증여자) 본인이 지배주주등이면 <b>본인 지분 해당분은 과세제외</b>(서면4팀-1078) · 지배주주등이 아닌 주주는 애초에 대상 아님</td></tr>
+            <tr><td>증여일</td><td><b>거래한 날</b>. 1회성 거래는 1회로 확정: 매년 반복 구성 불가(대법원 2025두30103)</td></tr>
+            <tr><td>시가</td><td><b>법인세법 시행령 §89</b>(령 §34의5⑧): 상증법 §60·§49 아님. 단일 감정가액도 인정(조심 2023서8044)</td></tr>
             <tr><td>신고기한</td><td>특정법인의 법인세 신고기한이 속하는 달의 말일부터 <b>3개월</b>(§68① 단서)</td></tr>
           </table>
           <div style="font-weight:700;font-size:12px;margin:10px 0 6px;color:var(--navy)">거래 유형과 거래이익 (령 §34의5④1호)</div>
@@ -1202,12 +1242,12 @@
           </table>
           <ul class="lawlist">
             <li><b>지배주주 판정</b>(령 §34의3①): 최대주주등 중 직접보유비율이 가장 높은 자가 개인이면 그 개인, 법인이면 그 법인에 대한 직접+간접 보유비율 합계가 가장 높은 개인. 본인+친족등 보유 합계가 사용인 보유분보다 많으면 본인·친족등 중에서 판정</li>
-            <li><b>자본거래 8유형</b>(령 §34의5②): 불공정 비율 합병 · 신주의 시가와 다른 가액 발행(불균등 증자) · 불균등·시가와 다른 가액 소각(불균등 감자) · 현물출자 인수 · 전환사채등 인수·취득·양도·전환 · 배당 포기·불균등 배당 · 주식의 포괄적 교환·이전 · 이에 준하는 거래. <b>2025.3.14. 이후 거래분</b>부터(부칙 제20777호 §2) — 그 전 자본거래는 이 조로 과세 불가(사전-2023-법규재산-0276 등)</li>
-            <li><b>법인세 상당액</b>(령 §34의5④2호) = (산출세액[토지등 양도분 제외] − 공제·감면) × 거래이익 ÷ 각 사업연도 소득금액 (비율 1 한도). 소득금액·산출세액은 <b>경정 반영 후 확정치</b>, 공제·감면은 실제 차감액(최저한세 적용 후, 기납부세액·가산세 제외). 거래이익이 익금인 유형(무상 수증·채무면제·고가 양도·자본거래)은 경정으로 소득금액에 반영되고, 익금이 아닌 유형(저가 양수 — 특수관계 개인의 유가증권 저가매입 제외 · 용역 무상/저가 수령)은 소득금액에 가산하지 않음</li>
+            <li><b>자본거래 8유형</b>(령 §34의5②): 불공정 비율 합병 · 신주의 시가와 다른 가액 발행(불균등 증자) · 불균등·시가와 다른 가액 소각(불균등 감자) · 현물출자 인수 · 전환사채등 인수·취득·양도·전환 · 배당 포기·불균등 배당 · 주식의 포괄적 교환·이전 · 이에 준하는 거래. <b>2025.3.14. 이후 거래분</b>부터(부칙 제20777호 §2): 그 전 자본거래는 이 조로 과세 불가(사전-2023-법규재산-0276 등)</li>
+            <li><b>법인세 상당액</b>(령 §34의5④2호) = (산출세액[토지등 양도분 제외] − 공제·감면) × 거래이익 ÷ 각 사업연도 소득금액 (비율 1 한도). 소득금액·산출세액은 <b>경정 반영 후 확정치</b>, 공제·감면은 실제 차감액(최저한세 적용 후, 기납부세액·가산세 제외). 거래이익이 익금인 유형(무상 수증·채무면제·고가 양도·자본거래)은 경정으로 소득금액에 반영되고, 익금이 아닌 유형(저가 양수: 특수관계 개인의 유가증권 저가매입 제외 · 용역 무상/저가 수령)은 소득금액에 가산하지 않음</li>
             <li><b>한도</b>(법 §45의5②·령⑨): 의제이익에 대한 증여세액이 [거래이익 × 보유비율을 직접 증여받은 경우의 증여세 상당액 − 법인세 상당액 × 보유비율]을 초과하면 초과분은 없는 것으로 봄</li>
             <li>증여일부터 <b>소급 1년 이내 동일한 거래</b>가 있으면 각 이익을 합산하여 계산(§43②)</li>
-            <li>§45의5는 <b>합산배제 대상이 아님</b>(§47①) — 동일 증여자 10년 내 증여와 합산. 증여자의 연대납부의무는 제외(§4의2⑥)</li>
-            <li><b>금전 무상·저리 대부</b>: 41조의4를 준용해 계산한 이익(령⑦ 후단) — 연 단위로 매년 새로 대부받은 것으로 보아 판정하되, 대부금 채권의 상사시효(5년) 완성 이후 연도분은 과세 불가(대법원 2025두34494)</li>
+            <li>§45의5는 <b>합산배제 대상이 아님</b>(§47①): 동일 증여자 10년 내 증여와 합산. 증여자의 연대납부의무는 제외(§4의2⑥)</li>
+            <li><b>금전 무상·저리 대부</b>: 41조의4를 준용해 계산한 이익(령⑦ 후단): 연 단위로 매년 새로 대부받은 것으로 보아 판정하되, 대부금 채권의 상사시효(5년) 완성 이후 연도분은 과세 불가(대법원 2025두34494)</li>
             <li>하나의 증여에 §35 등 다른 규정과 동시에 해당하면 이익이 가장 큰 것 하나만 적용(§43①)</li>
           </ul>
         </div>
@@ -1217,6 +1257,8 @@
 </div>
 <footer>근거: 상증세법 §45의5(특정법인 거래 증여의제)·상증령 §34의5(2026.2.27. 시행 기준) · 지배주주 판정 령 §34의3①② · 시가 법인세법 시행령 §89(령 §34의5⑧, 조심 2023서8044) · 소급 1년 동일거래 합산 §43② · 신고기한 §68① 단서 · 합산배제 아님 §47① · 증여자 연대납부의무 제외 §4의2⑥ · 자본거래 유형(3호의2)은 2025.3.14. 이후 거래분(부칙 제20777호 §2) · 2025.12.23. 개정으로 거래상대방에 지배주주 본인 포함</footer>
 </div><!-- /pane45 -->
+
+</main>
 
 <script>
 "use strict";
@@ -1251,18 +1293,33 @@ const dayNum = d => Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()
 const fmtDate = d => d? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'';
 const fmtDateShort = s => s? s.slice(2).replace(/-/g,'.') : '미입력';
 const PANE_CALC={paneMain:'calcBtn',pane35:'v35CalcBtn',pane41:'btnCalc',pane42:'v42CalcBtn',pane37:'v37CalcBtn',pane39:'v39CalcBtn',pane45:'f45CalcBtn'};
+// ─ 좌측 메뉴(v8): [페인 id, 이름, 묶음]
+const TABS=[['paneMain','증여세 계산','계산'],['pane35','§35 저가·고가양도','증여재산가액 산정'],['pane41','§41의4 금전무상대부','증여재산가액 산정'],['pane42','§42 임대용역','증여재산가액 산정'],['pane37','§37 무상사용','증여재산가액 산정'],['pane39','§39 증자·감자','증여재산가액 산정'],['pane45','§45의5 특정법인','증여재산가액 산정']];
+(function(){const nav=document.getElementById('tabs');TABS.forEach((t,i)=>{
+  if(i===0||TABS[i-1][2]!==t[2]){const g=document.createElement('span');g.className='tabgrp';g.textContent=t[2];nav.appendChild(g);}
+  const b=document.createElement('button');b.type='button';b.textContent=t[1];b.dataset.pane=t[0];if(i===0)b.className='active';
+  b.addEventListener('click',()=>window.showPane(t[0]));nav.appendChild(b);});})();
 window.showPane=function(id){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id===id));
-  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.pane===id));
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.pane===id));
   window.scrollTo(0,0);
 };
-document.querySelectorAll('.tabs .tab').forEach(t=>t.addEventListener('click',()=>window.showPane(t.dataset.pane)));
+// ─ 자동계산(v8): 입력·선택·행 추가/삭제가 있으면 그 페인의 산정 버튼(숨김)을 대신 누른다. 초기화는 제외.
+let acTimer=null;
+function autoCalc(pane){clearTimeout(acTimer);acTimer=setTimeout(()=>{const id=PANE_CALC[pane.id];const b=id&&document.getElementById(id);if(b)b.click();},200);}
+document.querySelectorAll('.tab-pane').forEach(p=>{
+  const inCol=p.querySelector('.wrap>div:first-child')||p.querySelector('.p41main>section:first-child');
+  if(!inCol)return;
+  ['input','change'].forEach(ev=>inCol.addEventListener(ev,e=>{const t=e.target;if(t&&t.matches&&t.matches('input,select,textarea')&&!t.classList.contains('de-pick'))autoCalc(p);}));
+  inCol.addEventListener('click',e=>{const b=e.target&&e.target.closest?e.target.closest('button'):null;
+    if(!b||b.classList.contains('de-cal')||b.classList.contains('reset')||/ResetBtn$|^btnReset$|CalcBtn$|^btnCalc$/.test(b.id||''))return;autoCalc(p);});
+});
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter'||e.target.tagName==='BUTTON'||e.target.type==='date') return;
   const pane=document.querySelector('.tab-pane.active');
   if(pane&&PANE_CALC[pane.id]){ const b=$(PANE_CALC[pane.id]); if(b) b.click(); }
 });
-// ─ 날짜 쉬운 입력: 모든 날짜칸을 숫자 8자리 타이핑(YYYYMMDD)으로 전환 — 자동 하이픈,
+// ─ 날짜 쉬운 입력: 모든 날짜칸을 숫자 8자리 타이핑(YYYYMMDD)으로 전환: 자동 하이픈,
 //   숫자 키패드(inputmode), 동적 생성 행(MutationObserver)까지 적용. 값은 기존과 동일한 YYYY-MM-DD.
 function validYmd(d){const y=+d.slice(0,4),m=+d.slice(4,6),dd=+d.slice(6);
   if(y<1900||y>2100||m<1||m>12||dd<1)return false;
@@ -1280,7 +1337,7 @@ function easeDate(el){
   const btn=document.createElement('button'); btn.type='button'; btn.className='de-cal';
   btn.tabIndex=-1; btn.title='달력에서 선택'; btn.textContent='📅';
   wrap.appendChild(btn); wrap.appendChild(pick);
-  // 토글: 열림 상태 추적 — 재클릭 시 브라우저가 라이트디스미스로 닫은 걸 다시 열지 않는다.
+  // 토글: 열림 상태 추적: 재클릭 시 브라우저가 라이트디스미스로 닫은 걸 다시 열지 않는다.
   // 다른 곳 클릭·날짜 선택(change)으로 닫히면 플래그도 함께 해제.
   let pOpen=false,pDoc=null;
   const pClose=()=>{pOpen=false;if(pDoc){document.removeEventListener('pointerdown',pDoc,true);pDoc=null;}};
@@ -1297,6 +1354,7 @@ function easeDate(el){
     pClose();
     if(!pick.value)return;
     el.value=pick.value; el.classList.remove('de-bad');
+    el.dispatchEvent(new Event('input',{bubbles:true}));
   });
   el.addEventListener('input',()=>{
     const c=el.selectionStart,before=el.value.length;
@@ -1394,7 +1452,7 @@ function addGiftRow(date='',amount='',limit='',farm=false){
     <input type="date" class="g-date" value="${date}">
     <input type="text" class="g-amount won" inputmode="numeric" value="${amount}" placeholder="증여재산가액(원)">
     <input type="text" class="g-limit won" inputmode="numeric" value="${limit}" placeholder="이 회차 공제한도(비우면 자동)" title="이 회차에 적용할 증여재산공제 한도(비우면 관계·연령 기준 자동)">
-    <label class="g-farm${farm?' on':''}" title="조특법 §71 영농자녀등 증여농지 감면 대상 — 감면농지끼리만 10년 합산, 5년간 1억 한도 감면. 같은 날 여러 필지는 행 순서대로 감면(순위)"><input type="checkbox" class="g-farmchk"${farm?' checked':''}>§71</label>
+    <label class="g-farm${farm?' on':''}" title="조특법 §71 영농자녀등 증여농지 감면 대상: 감면농지끼리만 10년 합산, 5년간 1억 한도 감면. 같은 날 여러 필지는 행 순서대로 감면(순위)"><input type="checkbox" class="g-farmchk"${farm?' checked':''}>§71</label>
     <button class="g-del" type="button" title="삭제">×</button>`;
   $('giftList').appendChild(div);
   for(const el of div.querySelectorAll('.g-amount,.g-limit')) el.addEventListener('input',()=>commaFormat(el));
@@ -1450,7 +1508,7 @@ function calculate(){
   //   F(감면농지 풀): §71 체크 회차끼리만 10년 합산 → 순증 산출세액 → 5년 1억 한도 감면 → 한도 초과분은
   //     가액 안분(재산세제과-521·1454)한 '과세부분 농지가액'을 같은 날짜의 일반 회차(taxedPart)로 주입
   //   G(일반 풀): 일반 회차 + 과세부분 회차끼리 10년 합산(기존 §47②·§53·§58 로직 그대로)
-  //   증여재산공제 장부는 두 풀이 공유 — 다른 풀이 10년 내 귀속시킨 공제만큼 한도(L)를 줄이고,
+  //   증여재산공제 장부는 두 풀이 공유: 다른 풀이 10년 내 귀속시킨 공제만큼 한도(L)를 줄이고,
   //   같은 날 과세재산·감면재산 동시 증여는 잔여 공제를 가액비로 안분(재산세과-2450·재산세과-33·서면4팀-1004)
   for(let i=0;i<gifts.length;i++){
     const cur=gifts[i], pool=cur.farm?'F':'G';
@@ -1511,10 +1569,10 @@ function calculate(){
     }
     const totalCalc=calcTax+surcharge;
 
-    // 기납부세액공제(§58) = min(A, B) — 재산세과-421(2012.11.22)·조심2008서3773
+    // 기납부세액공제(§58) = min(A, B): 재산세과-421(2012.11.22)·조심2008서3773
     //   A = 가산된 종전회차들의 한계 산출세액 합(합산산출−기납부, 세대생략 할증 제외)
     //   B = 당해 산출세액 × (가산종전 한계과세표준 합 ÷ 당해 합산 과세표준)
-    // 분자("가산한 증여재산의 과세표준", §58②) — 상속증여세과-366·재산세과-421·서일46014-10913
+    // 분자("가산한 증여재산의 과세표준", §58②): 상속증여세과-366·재산세과-421·서일46014-10913
     //   ① 그 재산에 증여재산공제가 귀속된 경우: 가산가액 − 귀속 공제액
     //   ② 귀속되지 않은 경우: 당해 합산 공제액의 잔여를 당해분·미귀속 가산분 가액으로 안분(그 회차 공제액 한도)
     //   귀속액은 각 재산의 "증여 당시"(그 회차) 기준으로만 확정하고 이후 회차에서 소급 갱신하지 않는다
@@ -1552,11 +1610,12 @@ function calculate(){
     const credPick = credDetail.length ? (creditPrepaid===totalCalc && totalCalc<Math.min(credA,credB) ? 'cap' : (credA<=credB?'A':'B')) : '';
 
     // ── §71 감면(F 풀): 순증 산출세액 → 5년 1억 한도 → 가액 안분 ──
-    let farmMarginal=0, priorFarmCalc=0, relief=0, reliefRoom=0, reliefUsed5=0, exemptVal=0, taxedVal=0, priorFarmExt=0;
+    let farmMarginal=0, farmGross=0, priorFarmCalc=0, relief=0, reliefRoom=0, reliefUsed5=0, exemptVal=0, taxedVal=0, priorFarmExt=0;
     if(pool==='F'){
       farmAny=true;
       for(const j of added) priorFarmCalc+=rows[j].farmMarginal;      // 종전 감면농지분 산출세액(1454 순증 방식)
-      farmMarginal=Math.max(0, totalCalc-priorFarmCalc);
+      farmGross=calcTax+grossSurcharge;                             // 감면농지 합산 산출세액(할증 총액 포함)
+      farmMarginal=Math.max(0, farmGross-priorFarmCalc);
       for(let j=0;j<i;j++) if(rows[j].pool==='F' && within5y(cur.date,gifts[j].date)) reliefUsed5+=rows[j].relief;
       if(priorFarmRelief>0 && (!priorFarmDate || within5y(cur.date,priorFarmDate))){ priorFarmExt=priorFarmRelief; reliefUsed5+=priorFarmRelief; }
       reliefRoom=Math.max(0, FARM_CAP-reliefUsed5);
@@ -1575,14 +1634,14 @@ function calculate(){
     const netTax=pool==='F' ? 0 : Math.max(0, totalCalc-creditTotal);   // 감면농지 회차의 세액은 과세부분 회차(G)에서 산출
     const payable=pool==='F' ? 0 : Math.max(0, totalCalc-creditPrepaid-cForeign);
 
-    const marginalTax=pool==='F' ? 0 : Math.max(0,calcTax-creditPrepaid);  // 본세 한계세액(할증 제외) — 다음 회차 A 산정용
-    const marginalSurcharge=surcharge;                    // 이 회차 순(純)할증 — 다음 회차 기할증 차감용(§46의3②)
+    const marginalTax=pool==='F' ? 0 : Math.max(0,calcTax-creditPrepaid);  // 본세 한계세액(할증 제외): 다음 회차 A 산정용
+    const marginalSurcharge=surcharge;                    // 이 회차 순(純)할증: 다음 회차 기할증 차감용(§46의3②)
     const idx = cur.taxedPart ? (cur.inputIdx+'-과세') : cur.inputIdx;
     rows.push({idx,inputIdx:cur.inputIdx,pool,farm:!!cur.farm,taxedPart:!!cur.taxedPart,fromIdx:cur.fromIdx,
       date:cur.date,value:cur.value,priorEff,merge,addedN:added.length,taxableValue,
       dedCap,dedLimit:L,dedShare,sameOther,otherUsed,attrDed:attrThis,ownBase,partGap,mb,totalDed,taxBase,belowMin,rate:pr.rate,prog:pr.ded,calcTax,surcharge,surRate,daeseup,
       totalCalc,creditPrepaid,credA,credB,credBnum,credDetail,credPick,cForeign,creditReport,rcRate,reportTypeEff,creditTotal,netTax,payable,
-      farmMarginal,priorFarmCalc,relief,reliefRoom,reliefUsed5,priorFarmExt,exemptVal,taxedVal,
+      farmMarginal,farmGross,priorFarmCalc,relief,reliefRoom,reliefUsed5,priorFarmExt,exemptVal,taxedVal,
       marginalTax,marginalSurcharge,grossSurcharge,priorSurcharge,isLast,info,minor,resident});
     // 과세부분 농지가액을 같은 날짜의 일반 회차로 주입(바로 다음 순번) → 일반 증여재산과 합산과세(2314·1454 질의2)
     if(pool==='F' && taxedVal>0) gifts.splice(i+1,0,{date:cur.date,value:taxedVal,limit:cur.limit,taxedPart:true,fromIdx:i,inputIdx:cur.inputIdx,farm:false});
@@ -1654,7 +1713,7 @@ function payPlan(net){
       out.push(`연부연납 가능(§71): 2천만원 초과. 담보 제공 시 <b>최대 ${years}년</b> 분할. 1회당 약 ${won(per)} (= 대상세액 ÷ ${years+1}회). + 가산금(납부일 현재 고시 가산율).`); }
   }
   if(net>10000000){
-    let part; if(net-10000000<=20000000) part=net-10000000; else part=Math.floor(net/2);
+    let part; if(net<=20000000) part=net-10000000; else part=Math.floor(net/2);   // 상증령 §66②
     out.push(`분납 가능(§70): 1천만원 초과. 납부기한 후 <b>2개월 내</b> ${won(part)}까지 분납(즉시납 ${won(net-part)} / 분납 ${won(part)}). ※ 연부연납과 택일.`);
   }
   return out;
@@ -1701,7 +1760,8 @@ function farmDetailRows(r){
   h+=row('과세표준',won(r.taxBase)+'원','§55','major');
   h+=row('적용세율',`${Math.round(r.rate*100)}% (누진공제 ${won(r.prog)})`,'§56');
   h+=row('산출세액',won(r.calcTax)+'원','§56','major');
-  if(r.surcharge) h+=row(`＋ 세대생략 할증 (${Math.round(r.surRate*100)}%)`,won(r.surcharge)+'원','§57','plus');
+  if(r.grossSurcharge) h+=row(`＋ 세대생략 할증 (${Math.round(r.surRate*100)}%)`,won(r.grossSurcharge)+'원','§57','plus');
+  if(r.grossSurcharge) h+=row('감면농지 합산 산출세액',won(r.farmGross)+'원','','major');
   if(r.priorFarmCalc) h+=row('− 종전 감면농지분 산출세액',won(r.priorFarmCalc)+'원','재산세제과-1454','minus');
   h+=row('순증 산출세액 (감면 대상)',won(r.farmMarginal)+'원','','major');
   h+=row('− §71 감면세액',won(r.relief)+'원',`한도잔여 ${won(r.reliefRoom)}`,'minus');
@@ -1726,21 +1786,21 @@ function farmBreakdown(fr, rows){
       <tbody>${tr}</tbody>
       <tr class="sum"><td colspan="2" style="text-align:right">계</td><td>${won(totV)}</td><td>${won(totR)}</td><td>${won(totR)}</td></tr>
     </table></div>
-    <div class="note warn" style="font-size:11px">같은 날 여러 필지는 입력한 행 순서를 감면 순위로 보아 순차 적용했습니다(순위 미지정 시 가액이 높은 순으로 신청한 것으로 봄 — 조특령 §68⑪). 한도 이내면 순위가 결과에 영향을 주지 않습니다. 순위 방식과 가액비 안분 방식이 갈리는 한도 초과 사안을 정리한 예규는 확인되지 않음.</div>`;
+    <div class="note warn" style="font-size:11px">같은 날 여러 필지는 입력한 행 순서를 감면 순위로 보아 순차 적용했습니다(순위 미지정 시 가액이 높은 순으로 신청한 것으로 봄: 조특령 §68⑪). 한도 이내면 순위가 결과에 영향을 주지 않습니다. 순위 방식과 가액비 안분 방식이 갈리는 한도 초과 사안을 정리한 예규는 확인되지 않음.</div>`;
   }
   const used5 = fr.reliefUsed5 ? `5년 내 기감면 ${won(fr.reliefUsed5)}${fr.priorFarmExt?` (목록 밖 ${won(fr.priorFarmExt)} 포함)`:''}` : '5년 내 기감면 없음';
   const pick = fr.farmMarginal<=fr.reliefRoom ? '순증 산출세액 전액 감면(한도 이내)' : `<b>한도잔여 ${won(fr.reliefRoom)}원으로 제한</b>`;
-  const ratio = fr.farmMarginal>0 ? `${won(fr.value)} × (${won(fr.relief)} ÷ ${won(fr.farmMarginal)}) = <b>${won(fr.exemptVal)}원</b>` : '산출세액 0 — 전액 감면농지로 봄';
+  const ratio = fr.farmMarginal>0 ? `${won(fr.value)} × (${won(fr.relief)} ÷ ${won(fr.farmMarginal)}) = <b>${won(fr.exemptVal)}원</b>` : '산출세액 0: 전액 감면농지로 봄';
   return rank+`<div class="sec-title">영농자녀 증여농지 감면 산정 (조특법 §71 · ${fr.inputIdx}회차)</div>
     <div class="formula-box">
-      감면농지 과세가액 = ${won(fr.value)}${fr.priorEff?` + 10년내 종전 감면농지 ${won(fr.priorEff)}`:''} = ${won(fr.taxableValue)} → 과세표준 ${won(fr.taxBase)} → 산출세액 ${won(fr.totalCalc)}${fr.surcharge?' (할증 포함)':''}<br>
-      순증 산출세액 = ${won(fr.totalCalc)}${fr.priorFarmCalc?` − 종전 농지분 ${won(fr.priorFarmCalc)}`:''} = <b>${won(fr.farmMarginal)}원</b><br>
-      감면세액 = min(순증 산출세액, 1억 − ${used5.replace('5년 내 기감면 ','').replace('없음','0')}) = <b>${won(fr.relief)}원</b> — ${pick}<br>
+      감면농지 과세가액 = ${won(fr.value)}${fr.priorEff?` + 10년내 종전 감면농지 ${won(fr.priorEff)}`:''} = ${won(fr.taxableValue)} → 과세표준 ${won(fr.taxBase)} → 산출세액 ${won(fr.farmGross)}${fr.grossSurcharge?' (할증 포함)':''}<br>
+      순증 산출세액 = ${won(fr.farmGross)}${fr.priorFarmCalc?` − 종전 농지분 ${won(fr.priorFarmCalc)}`:''} = <b>${won(fr.farmMarginal)}원</b><br>
+      감면세액 = min(순증 산출세액, 1억 − ${used5.replace('5년 내 기감면 ','').replace('없음','0')}) = <b>${won(fr.relief)}원</b>: ${pick}<br>
       감면받은 농지가액 = ${ratio} / 과세부분 = <b>${won(fr.taxedVal)}원</b>
     </div>
     <div class="note warn" style="font-size:11px">
       감면농지는 일반 증여재산과 합산하지 않고 감면농지끼리 합산한 산출세액에서 5년간 1억원 한도로 감면하며, 한도 초과로 감면받지 못한 <b>과세부분 농지가액만</b> 10년 내 일반 증여재산과 합산과세합니다(조특법 §71⑦·§133④, 서면-2021-법규재산-2314). 과세부분 가액은 전체 가액을 산출세액 중 감면세액 비율로 안분(재산세제과-521, 재차증여는 순증액 기준 1454). 증여자가 부·모로 나뉘어도 감면한도는 통산.
-      <br><b>[주의]</b> 농지만 증여받고 한도를 초과한 경우, 521 산식(전체 농지 산출세액 − 1억)과 과세부분 가액을 다시 누진세율로 과세하는 방식(본 계산기·2314 회신)은 금액이 다를 수 있습니다 — 상급기관 확인 권장.
+      <br><b>[주의]</b> 농지만 증여받고 한도를 초과한 경우, 521 산식(전체 농지 산출세액 − 1억)과 과세부분 가액을 다시 누진세율로 과세하는 방식(본 계산기·2314 회신)은 금액이 다를 수 있습니다: 상급기관 확인 권장.
     </div>`;
 }
 
@@ -1760,10 +1820,10 @@ function creditBreakdown(r){
     : (r.credPick==='A' ? '<b>A(종전 한계세액 합)</b>가 작아 A 채택' : '<b>B(§58② 한도)</b>가 작아 B 채택');
   const bTxt = r.taxBase>0
     ? `${won(r.calcTax)} × (${won(r.credBnum)} ÷ ${won(r.taxBase)}) = <b>${won(r.credB)}원</b>`
-    : '과세표준 0 — 0원';
+    : '과세표준 0: 0원';
   const gapTxt = Math.abs(r.partGap)<=2
-    ? `<span style="color:var(--accent)">✓ 정합</span> — 가산분 과세표준 ${won(r.credBnum)} ＋ 당해분 ${won(r.ownBase)} ＝ 합산 과세표준 ${won(r.taxBase)}`
-    : `<span style="color:var(--red)">✗ 불일치 ${won(r.partGap)}원</span> — 입력값을 확인하세요`;
+    ? `<span style="color:var(--accent)">✓ 정합</span>: 가산분 과세표준 ${won(r.credBnum)} ＋ 당해분 ${won(r.ownBase)} ＝ 합산 과세표준 ${won(r.taxBase)}`
+    : `<span style="color:var(--red)">✗ 불일치 ${won(r.partGap)}원</span>: 입력값을 확인하세요`;
   return `<div class="sec-title">기납부세액공제 계산내역 (§58)</div>
     <div class="multi-scroll"><table class="multi-tbl">
       <thead><tr><th>회</th><th>증여일</th><th>증여가액</th><th>귀속 증여재산<br>공제액</th><th>가산분 과세표준<br>(B 분자)</th><th>한계 산출세액<br>(A 구성)</th></tr></thead>
@@ -1773,13 +1833,13 @@ function creditBreakdown(r){
     <div class="formula-box">
       <b>A</b> 종전 회차 한계 산출세액 합(할증 제외) = <b>${won(r.credA)}원</b><br>
       <b>B</b> 당해 산출세액 × (가산분 과세표준 ÷ 당해 과세표준) = ${bTxt}<br>
-      공제액 = min(A, B) = <b>${won(r.creditPrepaid)}원</b> — ${pickTxt}<br>
+      공제액 = min(A, B) = <b>${won(r.creditPrepaid)}원</b>: ${pickTxt}<br>
       <span class="sub" style="color:inherit">검산: ${gapTxt}</span>
     </div>
     <div class="note warn" style="font-size:11px">
-      <b>가산분 과세표준</b>(§58②)은 그 재산에 증여재산공제가 귀속된 경우 <b>가산가액 − 귀속 공제액</b>, 귀속되지 않은 경우 당해 합산 공제액의 잔여를 당해분·미귀속 가산분 <b>가액으로 안분</b>하여 뺀 금액입니다(그 회차 공제액 한도) — 상속증여세과-366(2014.9.24)·재산세과-421·서일46014-10913.
+      <b>가산분 과세표준</b>(§58②)은 그 재산에 증여재산공제가 귀속된 경우 <b>가산가액 − 귀속 공제액</b>, 귀속되지 않은 경우 당해 합산 공제액의 잔여를 당해분·미귀속 가산분 <b>가액으로 안분</b>하여 뺀 금액입니다(그 회차 공제액 한도): 상속증여세과-366(2014.9.24)·재산세과-421·서일46014-10913.
       ${anyImputed?'<br><sup>*</sup> 표시는 당해 회차 공제액에서 안분해 그 재산에 귀속시킨 금액입니다(그 회차에는 공제가 적용되지 않았던 재산).':''}
-      <br><b>A</b>(한계 산출세액)는 각 회차 산출세액에서 그 회차가 받은 기납부세액공제를 뺀 금액(할증 제외) — 합산과세 산출세액에서 직전 회차 산출세액을 차감하는 것과 같습니다(상속증여세과-366 회신1, 조심2008서3773).
+      <br><b>A</b>(한계 산출세액)는 각 회차 산출세액에서 그 회차가 받은 기납부세액공제를 뺀 금액(할증 제외): 합산과세 산출세액에서 직전 회차 산출세액을 차감하는 것과 같습니다(상속증여세과-366 회신1, 조심2008서3773).
     </div>`;
 }
 
@@ -1804,7 +1864,7 @@ function render(r){
       tr+=`<tr class="${x.priorEff?'merged':''}${x.pool==='F'?' farm':''}${x.taxedPart?' taxed':''}">
         <td>${x.idx}${tag}</td><td class="dt">${fmtDateShort(x.date)}</td>
         <td>${won(x.value)}</td><td>${won(x.taxableValue)}</td>
-        <td>${won(x.taxBase)}</td><td>${won(x.calcTax+ x.surcharge)}</td>
+        <td>${won(x.taxBase)}</td><td>${won(x.pool==='F'?x.farmGross:x.calcTax+x.surcharge)}</td>
         <td>${x.pool==='F'?`감면 ${won(x.relief)}`:(x.creditPrepaid?won(x.creditPrepaid):'-')}</td>
         <td>${x.creditReport?won(x.creditReport):'-'}</td>
         <td class="net">${won(x.finalTax)}</td></tr>`;
@@ -1846,7 +1906,7 @@ function render(r){
   const a=[];
   if(last.pool==='F'){
     a.push(`감면농지 과세가액 = ${won(last.value)}${last.priorEff?` + 10년내 종전 감면농지 ${won(last.priorEff)}`:''} = ${won(last.taxableValue)} (일반 증여재산 미합산, 조특법 §71⑦)`);
-    a.push(`과세표준 = ${won(last.taxableValue)} − 공제 ${won(last.totalDed)} = ${won(last.taxBase)} → 산출세액 ${won(last.totalCalc)}${last.surcharge?' (할증 포함)':''}`);
+    a.push(`과세표준 = ${won(last.taxableValue)} − 공제 ${won(last.totalDed)} = ${won(last.taxBase)} → 산출세액 ${won(last.farmGross)}${last.grossSurcharge?' (할증 포함)':''}`);
     a.push(`§71 감면세액 = min(순증 ${won(last.farmMarginal)}, 한도잔여 ${won(last.reliefRoom)}) = ${won(last.relief)} → 과세부분 농지가액 ${won(last.taxedVal)}`);
     a.push(`자진납부세액 = 0 (전액 감면)`);
   } else {
@@ -1865,7 +1925,7 @@ function render(r){
   const auditBlock=`<div class="sec-title">계산명세 (당해 증여, audit)</div><div class="audit"><div class="at">상증세법 별지 제10호서식 흐름</div>`+a.map(x=>`<div>· ${x}</div>`).join('')+`</div>`;
 
   const printBtn=`<div style="padding:12px 16px;border-top:1px solid var(--line);text-align:right">
-    <button onclick="window.print()" style="background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;color:var(--muted)">🖨 인쇄/PDF</button></div>`;
+    <button onclick="window.print()" style="background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;color:var(--muted)">계산내역서 인쇄</button></div>`;
 
   $('result').innerHTML = head + body + notes + penBlock + auditBlock + printBtn;
 }
@@ -1897,7 +1957,7 @@ $('resetBtn').addEventListener('click',()=>{
   document.querySelectorAll('#penaltyBox input[type=checkbox]').forEach(c=>c.checked=false);
   $('daeseup').checked=false; $('useRowLimit').checked=false; syncRowLimit();
   syncUI();
-  $('result').innerHTML=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg><div>증여 정보를 입력하고 <b>계산</b>을 누르세요.</div></div>`;
+  $('result').innerHTML=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg><div>증여 정보를 입력하면 자동으로 계산됩니다.</div></div>`;
 });
 
 window.mainSetGifts = function(items){
@@ -1905,6 +1965,7 @@ window.mainSetGifts = function(items){
   $('giftList').innerHTML='';
   for(const it of items) addGiftRow(it.date||'', it.value?won(it.value):'');
   window.showPane('paneMain');
+  setTimeout(()=>$('calcBtn').click(),0);   // 자동계산(계산 버튼 숨김): 주입 직후 결과 갱신
 };
 
 addGiftRow();  // 기본 1행
@@ -1915,7 +1976,8 @@ if(location.hash.indexOf('#g=')===0){
   try{
     const items=decodeURIComponent(location.hash.slice(3)).split(';').filter(x=>x);
     if(items.length){ $('giftList').innerHTML='';
-      for(const it of items){ const p=it.split('|'); addGiftRow(p[0]||'', p[1]?parseInt(p[1],10).toLocaleString('ko-KR'):''); } }
+      for(const it of items){ const p=it.split('|'); addGiftRow(p[0]||'', p[1]?parseInt(p[1],10).toLocaleString('ko-KR'):''); }
+      setTimeout(()=>$('calcBtn').click(),0); }
   }catch(e){}
 }
 window.__blk.push(2);
@@ -1979,13 +2041,13 @@ function renderValue(r){
     const reqStr = r.special
       ? `차액 ${won(r.diff)} 이 <b>시가의 30%(${won(r.market30)})</b> 또는 <b>3억원</b> 이상`
       : `차액 ${won(r.diff)} 이 <b>시가의 30%(${won(r.market30)})</b> 이상 + 정당한 사유 없음`;
-    notes+=`<div class="note ok"><b>과세요건 충족</b> — ${reqStr} (§35${r.special?'①':'②'})</div>`;
+    notes+=`<div class="note ok"><b>과세요건 충족</b>: ${reqStr} (§35${r.special?'①':'②'})</div>`;
     if(r.giftValue===0) notes+=`<div class="note warn">요건은 충족하나 차액이 차감 기준금액 이하여서 증여재산가액은 0원입니다.</div>`;
   } else if(r.diff>0){
     const reqStr = r.special
       ? `차액 ${won(r.diff)} 이 시가30%(${won(r.market30)})·3억 모두 미만`
       : (!r.just ? '거래관행상 정당한 사유가 있어 과세 제외' : `차액 ${won(r.diff)} 이 시가30%(${won(r.market30)}) 미만`);
-    notes+=`<div class="note warn"><b>과세요건 미충족</b> — ${reqStr}. 증여세 과세 대상이 아닙니다.</div>`;
+    notes+=`<div class="note warn"><b>과세요건 미충족</b>: ${reqStr}. 증여세 과세 대상이 아닙니다.</div>`;
   }
   if(r.date && r.giftValue>0){
     const dl=deadlineFrom(r.date);
@@ -2008,7 +2070,7 @@ window.v35UseGift=function(v,date){
   window.mainSetGifts([{date:(date||''),value:v}]);
 };
 
-const PLACEHOLDER=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div>`;
+const PLACEHOLDER=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div>`;
 function syncVal(){
   $('v35NonSpecialNote').style.display=$('vs_no').checked?'block':'none';
   $('v35TypeHint').innerHTML = $('vt_low').checked
@@ -2092,7 +2154,7 @@ function engine41(list, special, noJust, evalStr){
   if (!borrows.length) return { error: '차입 거래를 1건 이상 입력하세요.' };
   var evalDate = evalStr || todayStr();
 
-  // 원금상환은 먼저 받은 차입부터 충당(선입선출) — 건별 잔액 변동 트랙
+  // 원금상환은 먼저 받은 차입부터 충당(선입선출): 건별 잔액 변동 트랙
   var tracks = [];
   for (i = 0; i < borrows.length; i++) tracks.push([{ date: borrows[i].date, bal: borrows[i].amount }]);
   for (i = 0; i < repays.length; i++) {
@@ -2239,7 +2301,7 @@ function render(r){
     '<div class="t3">' + (r.groups.length ? '과세 증여 ' + r.groups.length + '건 · ' + korUnit(r.total)
       : '과세 대상 없음') + '</div></div>';
   if (r.blocked)
-    h += '<div class="msg no"><b>과세 제외</b> — 비특수관계인 거래에 거래관행상 정당한 사유가 있어 과세하지 않습니다(41조의4 2항).</div>';
+    h += '<div class="msg no"><b>과세 제외</b>: 비특수관계인 거래에 거래관행상 정당한 사유가 있어 과세하지 않습니다(41조의4 2항).</div>';
   if (r.groups.length) {
     h += '<div class="h3">증여일 · 증여재산가액 (소급 1년 합산으로 1천만원 도달한 날, 43조 2항)</div>' +
       '<table class="rs"><tr><th>증여일</th><th>적정이자 합</th><th>지급이자</th><th>증여재산가액</th><th>합산</th></tr>';
@@ -2252,7 +2314,7 @@ function render(r){
     h += '<tr class="sum"><td colspan="3">합계</td><td>' + comma(r.total) + '</td><td>' +
       r.groups.length + '건</td></tr></table>';
   } else if (r.events.length && !r.blocked) {
-    h += '<div class="msg no"><b>과세 대상 없음</b> — 1년 단위 이익이 1천만원에 도달하지 않습니다(시행령 31조의4).</div>';
+    h += '<div class="msg no"><b>과세 대상 없음</b>: 1년 단위 이익이 1천만원에 도달하지 않습니다(시행령 31조의4).</div>';
   }
   if (r.events.length) {
     h += '<div class="h3">건별 1년 단위 사이클 (빌린 날부터 매년 갱신, 41조의4 3항)</div>' +
@@ -2301,7 +2363,7 @@ byId('btnReset').addEventListener('click', function(){
   byId('rel_y').checked = true;
   byId('justNo').checked = true;
   syncRel();
-  byId('out').innerHTML = '<div class="empty">거래 내역을 입력하고 <b>산정</b>을 누르세요.</div>';
+  byId('out').innerHTML = '<div class="empty">거래 내역을 입력하면 자동으로 산정됩니다.</div>';
 });
 addRow('in');
 syncRel();
@@ -2367,10 +2429,10 @@ function renderRent(r){
     for(const c of r.cycles) ct+=`<tr class="${c.taxed?'':'merged'}"><td class="dt">${fmtDateShort(c.giftDate)}</td><td class="dt">${fmtDateShort(c.cstart)}~${fmtDateShort(c.cend)}</td><td>${won(r.marketYr)}</td><td>${r.rent?won(r.rent):'-'}</td><td class="net">${won(c.benefit)}</td><td>${c.taxed?'<b>과세</b>':'-'}</td></tr>`;
     body+=`<div class="sec-title">증여일별 (임대 개시일부터 1년 단위 자동)</div><div class="multi-scroll"><table class="multi-tbl"><thead><tr><th style="text-align:left">증여일</th><th>기간</th><th>시가</th><th>임대료</th><th>증여이익</th><th>과세</th></tr></thead><tbody>${ct}</tbody><tr class="sum"><td colspan="4" style="text-align:right">과세 합계</td><td class="net">${won(r.total)}</td><td>${r.taxedCycles.length}건</td></tr></table></div>`;
   }
-  if(r.blocked) body+=`<div class="note warn"><b>과세 제외</b> — 비특수관계인 거래에 거래관행상 정당한 사유가 있어 과세하지 않습니다(§42③).</div>`;
-  else if(r.taxedCycles.length) body+=`<div class="note ok"><b>과세요건 충족</b> — ${r.cycles.find(c=>c.taxed).reason} (§42)</div>`;
-  else body+=`<div class="note warn"><b>과세 대상 아님</b> — ${(r.cycles[0]||{}).reason||'증여이익 없음'}.</div>`;
-  body+=`<div class="note" style="background:#f7f9fc;color:#46506a;border-top:1px solid var(--line)"><b>참고 — 임대인 측 부당행위 시가</b> (소득세법 §98④·법인세법 §89④1호): (평가액×50% − 보증금)×3.1% = <b>${won(r.abuseYr)}원/년</b>. 이 계산기는 <b>증여세(임차인)</b> 기준이며, 임대인 소득세·법인세는 이 시가로 별도 검토하세요.</div>`;
+  if(r.blocked) body+=`<div class="note warn"><b>과세 제외</b>: 비특수관계인 거래에 거래관행상 정당한 사유가 있어 과세하지 않습니다(§42③).</div>`;
+  else if(r.taxedCycles.length) body+=`<div class="note ok"><b>과세요건 충족</b>: ${r.cycles.find(c=>c.taxed).reason} (§42)</div>`;
+  else body+=`<div class="note warn"><b>과세 대상 아님</b>: ${(r.cycles[0]||{}).reason||'증여이익 없음'}.</div>`;
+  body+=`<div class="note" style="background:#f7f9fc;color:#46506a;border-top:1px solid var(--line)"><b>참고: 임대인 측 부당행위 시가</b> (소득세법 §98④·법인세법 §89④1호): (평가액×50% − 보증금)×3.1% = <b>${won(r.abuseYr)}원/년</b>. 이 계산기는 <b>증여세(임차인)</b> 기준이며, 임대인 소득세·법인세는 이 시가로 별도 검토하세요.</div>`;
   body+=`<div class="sec-title">산식 (§42)</div><div class="formula-box">
     임대용역 시가 = 부동산평가액 × 2% = ${won(r.pv)} × 2% = <b>${won(r.marketYr)}</b><br>
     증여이익 = 시가 − 실제임대료 = ${won(r.marketYr)} − ${won(r.rent)} = <b>${won(Math.max(0,r.marketYr-r.rent))}</b><br>
@@ -2387,7 +2449,7 @@ function renderRent(r){
   $('v42Result').innerHTML = head + body + link;
 }
 
-const PLACEHOLDER=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div>`;
+const PLACEHOLDER=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div>`;
 function syncVal(){ $('rentNonSpecialNote').style.display=$('rs_no').checked?'block':'none'; }
 document.querySelectorAll('#pane42 input[type=radio]').forEach(e=>e.addEventListener('change',syncVal));
 $('v42CalcBtn').addEventListener('click',()=>renderRent(calcRent()));
@@ -2452,10 +2514,10 @@ function renderUse(r){
     for(const c of r.cycles) ct+=`<tr class="${c.taxed?'':'merged'}"><td class="dt">${fmtDateShort(c.giftDate)}</td><td class="dt">${fmtDateShort(c.giftDate)}~${fmtDateShort(c.cend)}</td><td class="net">${won(c.benefit)}</td><td>${c.taxed?'<b>과세</b>':'-'}</td></tr>`;
     body+=`<div class="sec-title">5년 단위 증여 (개시일부터 재과세)</div><div class="multi-scroll"><table class="multi-tbl"><thead><tr><th style="text-align:left">증여일</th><th>5년 기간</th><th>5년 환산이익</th><th>과세</th></tr></thead><tbody>${ct}</tbody><tr class="sum"><td colspan="2" style="text-align:right">과세 합계</td><td class="net">${won(r.total)}</td><td>${r.taxedCycles.length}건</td></tr></table></div>`;
   }
-  if(r.cohabit) body+=`<div class="note warn"><b>과세 제외</b> — 소유자와 함께 거주하는 주택+부수토지는 §37 적용 제외(비과세).</div>`;
-  else if(r.blocked) body+=`<div class="note warn"><b>과세 제외</b> — 비특수관계인 거래에 거래관행상 정당한 사유가 있어 과세하지 않습니다(§37③).</div>`;
-  else if(r.taxedCycles.length) body+=`<div class="note ok"><b>과세요건 충족</b> — 5년 환산이익 ${won(r.benefit5)} ≥ 1억원 (§37) · 증여시기 ${fmtDate(new Date(r.cycles[0].giftDate+'T00:00:00'))}</div>`;
-  else body+=`<div class="note warn"><b>과세 대상 아님</b> — 5년 환산이익 ${won(r.benefit5)} < 1억원(§37 기준금액). 평가액 약 13.2억원 이상부터 과세.</div>`;
+  if(r.cohabit) body+=`<div class="note warn"><b>과세 제외</b>: 소유자와 함께 거주하는 주택+부수토지는 §37 적용 제외(비과세).</div>`;
+  else if(r.blocked) body+=`<div class="note warn"><b>과세 제외</b>: 비특수관계인 거래에 거래관행상 정당한 사유가 있어 과세하지 않습니다(§37③).</div>`;
+  else if(r.taxedCycles.length) body+=`<div class="note ok"><b>과세요건 충족</b>: 5년 환산이익 ${won(r.benefit5)} ≥ 1억원 (§37) · 증여시기 ${fmtDate(new Date(r.cycles[0].giftDate+'T00:00:00'))}</div>`;
+  else body+=`<div class="note warn"><b>과세 대상 아님</b>: 5년 환산이익 ${won(r.benefit5)} < 1억원(§37 기준금액). 평가액 약 13.2억원 이상부터 과세.</div>`;
   body+=`<div class="sec-title">산식 (§37)</div><div class="formula-box">
     5년 무상사용이익 = 부동산평가액 × 2% × 3.79079(5년 연금현가, 할인율 10%)<br>
     = ${won(r.pv)} × 2% × 3.79079 = <b>${won(r.benefit5)}</b><br>
@@ -2471,7 +2533,7 @@ function renderUse(r){
   $('v37Result').innerHTML = head + body + link;
 }
 
-const PLACEHOLDER=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div>`;
+const PLACEHOLDER=`<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div>`;
 function syncVal(){ $('useNonSpecialNote').style.display=$('use_no').checked?'block':'none'; }
 document.querySelectorAll('#pane37 input[type=radio]').forEach(e=>e.addEventListener('change',syncVal));
 $('v37CalcBtn').addEventListener('click',()=>renderUse(calcUse()));
@@ -2489,7 +2551,7 @@ window.__blk.push(6);
 "use strict";
 var $=function(id){return document.getElementById(id);};
 function won(n){return (n||0).toLocaleString('ko-KR');}
-function wonF(n){ // 1주당 가액 — 소수 둘째 자리까지
+function wonF(n){ // 1주당 가액: 소수 둘째 자리까지
   if(n===null||n===undefined||isNaN(n))return '-';
   var r=Math.round(n*100)/100;
   return r.toLocaleString('ko-KR',{maximumFractionDigits:2});
@@ -2523,12 +2585,12 @@ var EOK3=300000000;
 
 // ══════════ 케이스별 표시 제어 ══════════
 var CASE_HINTS={
-  LA:'실권주를 배정받은 자가 수증자 — 특수관계 불문, 최소기준 없음 (§39①1가).',
-  LB:'실권주를 배정하지 않고 실권 처리 — 실권 주주의 특수관계인인 신주 인수 주주가 수증자 (§39①1나).',
-  LC:'주주 아닌 자에 대한 직접배정 또는 기존 주주의 균등 초과배정 — 특수관계 불문, 최소기준 없음 (§39①1다·라).',
-  HA:'고가 발행 실권주를 특수관계인이 재배정받아 인수 — 신주인수를 포기한 주주가 수증자 (§39①2가).',
-  HB:'고가 발행 실권주를 실권 처리 — 특수관계인이 신주 인수 시 포기 주주가 수증자 (§39①2나).',
-  HC:'제3자 직접배정·균등 초과 인수 — 인수자의 특수관계인인 기존 주주가 수증자 (§39①2다·라).'
+  LA:'실권주를 배정받은 자가 수증자: 특수관계 불문, 최소기준 없음 (§39①1가).',
+  LB:'실권주를 배정하지 않고 실권 처리: 실권 주주의 특수관계인인 신주 인수 주주가 수증자 (§39①1나).',
+  LC:'주주 아닌 자에 대한 직접배정 또는 기존 주주의 균등 초과배정: 특수관계 불문, 최소기준 없음 (§39①1다·라).',
+  HA:'고가 발행 실권주를 특수관계인이 재배정받아 인수: 신주인수를 포기한 주주가 수증자 (§39①2가).',
+  HB:'고가 발행 실권주를 실권 처리: 특수관계인이 신주 인수 시 포기 주주가 수증자 (§39①2나).',
+  HC:'제3자 직접배정·균등 초과 인수: 인수자의 특수관계인인 기존 주주가 수증자 (§39①2다·라).'
 };
 function jCase(){
   return ($('jt_low').checked?'L':'H')+(document.querySelector('input[name=jAlloc]:checked').value);
@@ -2598,13 +2660,13 @@ function calcJ(){
   if(c[0]==='L') Pa=(listed&&Pr>0)?Math.min(PaRaw,Pr):PaRaw;
   else           Pa=(listed&&Pr>0)?Math.max(PaRaw,Pr):PaRaw;
   r.Nadd=Nadd;r.PaRaw=PaRaw;r.Pa=Pa;
-  if(P0<=0&&Pa<=0)return{error:'증자 전·후 1주당 가액이 모두 0 이하 — 이익이 없는 것으로 봅니다(령 §29② 단서).'};
+  if(P0<=0&&Pa<=0)return{error:'증자 전·후 1주당 가액이 모두 0 이하: 이익이 없는 것으로 봅니다(령 §29② 단서).'};
   diff=(c[0]==='L')?(Pa-Pn):(Pn-Pa);
   r.diff=diff;
   if(diff<=0){
     r.noBenefit=(c[0]==='L')
-      ?'증자 후 1주당 가액이 인수가액 이하 — 저가 발행 이익이 없습니다.'
-      :'인수가액이 증자 후 1주당 가액 이하 — 고가 발행 이익이 없습니다.';
+      ?'증자 후 1주당 가액이 인수가액 이하: 저가 발행 이익이 없습니다.'
+      :'인수가액이 증자 후 1주당 가액 이하: 고가 발행 이익이 없습니다.';
     return r;
   }
 
@@ -2637,7 +2699,7 @@ function calcJ(){
       var equal=Nadd*H0/N0;
       qty=S-equal;
       r.equal=equal;r.S=S;
-      if(qty<=0){r.noBenefit='배정 신주수가 균등 배정분('+wonF(equal)+'주) 이하 — 초과배정 이익이 없습니다.';return r;}
+      if(qty<=0){r.noBenefit='배정 신주수가 균등 배정분('+wonF(equal)+'주) 이하: 초과배정 이익이 없습니다.';return r;}
       ratioTxt='균등 배정분 = '+won(Nadd)+' × '+won(H0)+' ÷ '+won(N0)+' = '+wonF(equal)+'주 → 초과분 '+wonF(qty)+'주';
     }else qty=S;
     r.qty=qty;r.benefit=Math.floor(diff*qty);
@@ -2698,7 +2760,7 @@ function calcG(){
     var totAfter=N0-K, ratio=H/totAfter;
     if(H>totAfter)return{error:'감자 후 보유주식수가 감자 후 총주식수('+won(totAfter)+'주)를 초과할 수 없습니다.'};
     diff=Pe-Pp;
-    if(diff<=0){r.noBenefit='지급 대가가 평가액 이상 — 저가 소각 이익이 없습니다.';return r;}
+    if(diff<=0){r.noBenefit='지급 대가가 평가액 이상: 저가 소각 이익이 없습니다.';return r;}
     r.diff=diff;r.totAfter=totAfter;r.ratio=ratio;r.Ks=Ks;
     r.benefit=Math.floor(diff*K*ratio*(Ks/K));
     r.formula='(1주당 평가액 − 소각 시 지급한 1주당 대가) × 총 감자 주식수 × 대주주의 감자 후 지분비율 × (특수관계인의 감자 주식수 ÷ 총 감자 주식수)';
@@ -2712,9 +2774,9 @@ function calcG(){
     var ref=Math.min(Pf,Pp);
     r.limitRef=ref;r.limitOk=Pe<ref;r.Pf=Pf;r.Kh=Kh;
     diff=Pp-Pe;
-    if(diff<=0){r.noBenefit='지급 대가가 평가액 이하 — 고가 소각 이익이 없습니다.';return r;}
+    if(diff<=0){r.noBenefit='지급 대가가 평가액 이하: 고가 소각 이익이 없습니다.';return r;}
     if(!r.limitOk){
-      r.noBenefit='1주당 평가액('+won(Pe)+'원)이 액면가액'+(Pp<Pf?'에 미달하는 대가':'')+'('+won(ref)+'원) 이상 — §39의2①2는 평가액이 이에 미달하는 경우로 한정되어 과세 대상이 아닙니다.';
+      r.noBenefit='1주당 평가액('+won(Pe)+'원)이 액면가액'+(Pp<Pf?'에 미달하는 대가':'')+'('+won(ref)+'원) 이상: §39의2①2는 평가액이 이에 미달하는 경우로 한정되어 과세 대상이 아닙니다.';
       return r;
     }
     r.diff=diff;
@@ -2752,7 +2814,7 @@ function render(r){
   var taxable=!r.noBenefit&&r.benefit>0&&(!r.threshold||r.threshold.pass);
   var giftValue=taxable?r.benefit:0;
 
-  var head='<div class="res-head"><div class="lbl">증여재산가액 — '+name+'</div>'
+  var head='<div class="res-head"><div class="lbl">증여재산가액: '+name+'</div>'
     +'<div class="amt">'+won(giftValue)+'<small> 원</small></div>'
     +'<div class="sub2">수증자: '+donee+' · '+(giftValue?korMoney(giftValue):'과세 대상 아님')+'</div></div>';
 
@@ -2782,10 +2844,10 @@ function render(r){
   if(r.noBenefit)notes+='<div class="note red">'+r.noBenefit+'</div>';
   else if(r.threshold){
     notes+=r.threshold.pass
-      ?'<div class="note ok"><b>과세 기준 충족</b> — '+r.threshold.txt+'</div>'
-      :'<div class="note warn"><b>과세 기준 미달</b> — '+r.threshold.txt+'. 증여세 과세 대상이 아닙니다.</div>';
+      ?'<div class="note ok"><b>과세 기준 충족</b>: '+r.threshold.txt+'</div>'
+      :'<div class="note warn"><b>과세 기준 미달</b>: '+r.threshold.txt+'. 증여세 과세 대상이 아닙니다.</div>';
   }else if(r.benefit>0){
-    notes+='<div class="note ok"><b>과세 최소기준 없음</b> — 이 유형은 기준금액 없이 산정 이익 전액이 증여재산가액입니다.</div>';
+    notes+='<div class="note ok"><b>과세 최소기준 없음</b>: 이 유형은 기준금액 없이 산정 이익 전액이 증여재산가액입니다.</div>';
   }
   if(r.ratioTxt)notes+='<div class="note warn" style="background:#fbfcfe;color:#46506a;border-top:1px solid var(--line2)">'+r.ratioTxt+'</div>';
   if(r.prWarn)notes+='<div class="note warn">'+r.prWarn+'</div>';
@@ -2819,7 +2881,7 @@ window.v39UseGift=function(v,date){
   window.mainSetGifts([{date:(date||''),value:v}]);
 };
 
-var PLACEHOLDER='<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>자본거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div>';
+var PLACEHOLDER='<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>자본거래 정보를 입력하면 자동으로 산정됩니다.</div></div>';
 
 (function(){
   var radios=document.querySelectorAll('#pane39 input[type=radio]');
@@ -2869,7 +2931,7 @@ function pctTxt(p){return (Math.round(p*10000)/10000)+'%';}
 var EOK1=100000000,EOK3=300000000;
 
 // ══════════ §45의5 특정법인 거래 증여의제 (령 §34의5) ══════════
-function f45Tax(base){ // §56 기본세율 산출세액 — 한도(법②) 비교 참고용
+function f45Tax(base){ // §56 기본세율 산출세액: 한도(법②) 비교 참고용
   var B=[[1e8,0.10,0],[5e8,0.20,1e7],[1e9,0.30,6e7],[3e9,0.40,1.6e8],[Infinity,0.50,4.6e8]];
   for(var i=0;i<B.length;i++)if(base<=B[i][0])return Math.max(0,Math.round(base*B[i][1])-B[i][2]);
   return 0;
@@ -2882,7 +2944,7 @@ function f45Compute(inp){
     if(inp.prc<0)return{error:'실제 대가를 확인하세요.'};
     r.mkt=inp.mkt;r.prc=inp.prc;
     r.R=(inp.kind==='L')?(inp.mkt-inp.prc):(inp.prc-inp.mkt);
-    if(r.R<=0){r.R=0;r.noBenefit=(inp.kind==='L')?'실제 대가가 시가 이상 — 저가 거래 이익이 없습니다.':'실제 대가가 시가 이하 — 고가 거래 이익이 없습니다.';return r;}
+    if(r.R<=0){r.R=0;r.noBenefit=(inp.kind==='L')?'실제 대가가 시가 이상: 저가 거래 이익이 없습니다.':'실제 대가가 시가 이하: 고가 거래 이익이 없습니다.';return r;}
     var need=inp.mkt*3/10;
     r.thr={need:need,p30:r.R>=need,p3:r.R>=EOK3};
     r.thr.pass=r.thr.p30||r.thr.p3;
@@ -2942,11 +3004,11 @@ var KIND_NAME={G:'재산·용역 무상 제공받음 (§45의5①1)',L:'현저�
   H:'현저히 높은 대가로 양도·제공 (§45의5①3)',D:'채무 면제·인수·변제 (§45의5①4·령⑥)',
   C:'자본거래 등 준용 이익 (§45의5①3의2·령②)'};
 var KIND_HINTS={
-  G:'재산 증여(현물·주식 등)나 용역을 무상으로 제공받는 경우 — 그 가액 <b>전액</b>이 거래이익(최소기준 없음). 금전을 무상으로 대부받은 경우는 41조의4를 준용해 <b>연 단위</b>(매년 새로 대부받은 것으로 봄)로 산정한 이익(연간 적정이자)을 입력 — 41조의4 탭에서 계산.',
-  L:'시가(법인세법 시행령 §89)보다 현저히 낮은 대가로 양도·제공받는 경우 — 차액이 <b>시가의 30% 이상 또는 3억원 이상</b>일 때만 해당하고, 충족하면 <b>차액 전액</b>이 거래이익(§35처럼 3억·30%를 빼지 않음). 금전 저리 대부는 시가란에 연간 적정이자(41조의4 적정이자율), 대가란에 실제 지급이자.',
-  H:'특정법인이 재산·용역을 시가보다 현저히 높은 대가로 양도·제공하는 경우 — 30%·3억 요건과 차액 전액 산입은 저가와 같습니다.',
-  D:'특정법인의 채무를 면제·인수·변제하는 경우 — 특정법인이 얻는 이익 상당액 전액(최소기준 없음). 해산(합병·분할 제외) 중으로 주주등에게 분배할 잔여재산이 없으면 제외(령 §34의5⑥).',
-  C:'불공정 합병·불균등 증자·불균등 감자·현물출자·전환사채·불균등 배당·포괄적 교환 등(령 §34의5② 8유형) — §38·§39·§39의2 등을 준용해 계산한 이익을 입력(불균등 증자·감자는 §39 탭에서 산정). <b>2025.3.14. 이후 거래분</b>부터 적용.'};
+  G:'재산 증여(현물·주식 등)나 용역을 무상으로 제공받는 경우: 그 가액 <b>전액</b>이 거래이익(최소기준 없음). 금전을 무상으로 대부받은 경우는 41조의4를 준용해 <b>연 단위</b>(매년 새로 대부받은 것으로 봄)로 산정한 이익(연간 적정이자)을 입력: 41조의4 탭에서 계산.',
+  L:'시가(법인세법 시행령 §89)보다 현저히 낮은 대가로 양도·제공받는 경우: 차액이 <b>시가의 30% 이상 또는 3억원 이상</b>일 때만 해당하고, 충족하면 <b>차액 전액</b>이 거래이익(§35처럼 3억·30%를 빼지 않음). 금전 저리 대부는 시가란에 연간 적정이자(41조의4 적정이자율), 대가란에 실제 지급이자.',
+  H:'특정법인이 재산·용역을 시가보다 현저히 높은 대가로 양도·제공하는 경우: 30%·3억 요건과 차액 전액 산입은 저가와 같습니다.',
+  D:'특정법인의 채무를 면제·인수·변제하는 경우: 특정법인이 얻는 이익 상당액 전액(최소기준 없음). 해산(합병·분할 제외) 중으로 주주등에게 분배할 잔여재산이 없으면 제외(령 §34의5⑥).',
+  C:'불공정 합병·불균등 증자·불균등 감자·현물출자·전환사채·불균등 배당·포괄적 교환 등(령 §34의5② 8유형): §38·§39·§39의2 등을 준용해 계산한 이익을 입력(불균등 증자·감자는 §39 탭에서 산정). <b>2025.3.14. 이후 거래분</b>부터 적용.'};
 var AMT_LBL={G:'제공받은 재산·용역의 가액',D:'면제·인수·변제로 얻는 이익',C:'준용 산식으로 계산한 이익'};
 var AMT_HINT={G:'재산 증여는 증여재산가액, 용역은 시가(법인세법 시행령 §89)',D:'령 §34의5④1가',C:'§39 탭 등에서 산정한 금액'};
 
@@ -2961,11 +3023,11 @@ function sync(){
 function addHolder(nm,pc,self){
   var d=document.createElement('div');
   d.className='f45hr';
-  d.style.cssText='display:flex;gap:7px;margin-bottom:8px;align-items:center';
+  d.style.cssText='display:flex;margin-bottom:8px;align-items:center';
   d.innerHTML='<input type="text" class="f45hn" placeholder="성명(선택)" style="width:auto;flex:1;min-width:0">'
     +'<input type="text" class="f45hp" placeholder="보유비율 %" inputmode="decimal" style="width:112px;flex:0 0 112px;text-align:right;font-variant-numeric:tabular-nums">'
-    +'<label class="f45hsw" title="이 사람이 특정법인과 거래한 상대방(증여자)이면 체크 — 본인이 증여한 몫은 과세제외(서면4팀-1078)">'
-    +'<input type="checkbox" class="f45hs" style="margin:0">거래상대방</label>'
+    +'<label class="f45hsw" title="이 사람이 특정법인과 거래한 상대방(증여자)이면 체크: 본인이 증여한 몫은 과세제외(서면4팀-1078)">'
+    +'<input type="checkbox" class="f45hs" style="margin:0 4px 0 0">거래상대방</label>'
     +'<button type="button" class="f45hd" title="행 삭제" style="width:34px;height:38px;border:1px solid var(--line);background:#fff;border-radius:8px;color:var(--muted);cursor:pointer;font-size:14px;flex:0 0 auto">✕</button>';
   d.querySelector('.f45hd').addEventListener('click',function(){
     var rows=document.querySelectorAll('#f45Holders .f45hr');
@@ -3002,11 +3064,11 @@ function render(r,inp){
   var name=KIND_NAME[r.kind];
   var thrFail=r.thr&&!r.thr.pass;
   var headAmt=(r.noBenefit||thrFail)?0:r.P;
-  var head='<div class="res-head"><div class="lbl">특정법인의 이익 (법인세 상당액 차감 후) — '+name+'</div>'
+  var head='<div class="res-head"><div class="lbl">특정법인의 이익 (법인세 상당액 차감 후): '+name+'</div>'
     +'<div class="amt">'+won(headAmt)+'<small> 원</small></div>'
     +'<div class="sub2">'+(r.anyTax
       ?('과세대상 지배주주등 '+r.taxCnt+'명 · 증여의제이익 합계 '+korMoney(r.taxSum))
-      :(r.noBenefit?'이익 없음':(thrFail?'30%·3억 요건 미달 — 과세 대상 아님':'과세 대상 없음 (개인별 1억원 미만)')))+'</div></div>';
+      :(r.noBenefit?'이익 없음':(thrFail?'30%·3억 요건 미달: 과세 대상 아님':'과세 대상 없음 (개인별 1억원 미만)')))+'</div></div>';
 
   var t='';
   if(r.kind==='L'||r.kind==='H'){
@@ -3018,7 +3080,7 @@ function render(r,inp){
   }
   if(!r.noBenefit&&!thrFail){
     t+=row('법인세 산출세액 − 공제·감면',won(r.net)+'원');
-    t+=row('거래이익 ÷ 각 사업연도 소득금액'+(r.ratioCapped?' (1 한도)':''),(inp.income>0?(Math.round(r.ratio*10000)/100)+'%':'—'));
+    t+=row('거래이익 ÷ 각 사업연도 소득금액'+(r.ratioCapped?' (1 한도)':''),(inp.income>0?(Math.round(r.ratio*10000)/100)+'%':'-'));
     t+=row('법인세 상당액',won(r.CT)+'원','minus');
     t+=row('특정법인의 이익',won(r.P)+'원','major');
   }
@@ -3032,9 +3094,9 @@ function render(r,inp){
       ht+='<tr><td>'+h.name+(h.self?' <span style="color:var(--warn);font-size:11px">〔거래상대방〕</span>':'')+'</td><td style="text-align:right">'+pctTxt(h.pct)+'</td>'
         +'<td style="text-align:right;font-weight:600'+(h.self?';text-decoration:line-through;color:var(--muted)':'')+'">'+won(h.benefit)+'원</td>'
         +'<td>'+(h.self?'본인 증여분 제외':(h.taxable?'<b>과세</b>':'1억 미만 제외'))+'</td>'
-        +'<td>'+(h.taxable?(h.capHit?'한도 초과 → 세액 상한 '+won(h.capTax)+'원':'한도 내'):'—')+'</td></tr>';
+        +'<td>'+(h.taxable?(h.capHit?'한도 초과 → 세액 상한 '+won(h.capTax)+'원':'한도 내'):'-')+'</td></tr>';
     }
-    ht+='</table><p class="sub" style="margin:6px 0 0">보유비율 합계 '+pctTxt(r.sumPct)+' — '
+    ht+='</table><p class="sub" style="margin:6px 0 0">보유비율 합계 '+pctTxt(r.sumPct)+': '
       +(r.sumPct>=30?'특정법인 요건(30% 이상) 충족.':'<b>30% 미만</b>: 지배주주등 전원(친족 포함) 합계가 30% 이상인지 확인하세요. 미만이면 특정법인이 아니어서 과세 대상이 아닙니다.')+'</p></div>';
   }
 
@@ -3042,28 +3104,28 @@ function render(r,inp){
   if(r.noBenefit)notes+='<div class="note red">'+r.noBenefit+'</div>';
   if(r.thr){
     notes+=r.thr.pass
-      ?'<div class="note ok"><b>현저한 대가 요건 충족</b> — 차액 '+won(r.R)+'원이 시가의 30%('+won(Math.floor(r.thr.need))+'원) '+(r.thr.p30?'이상':'미만')+' · 3억원 '+(r.thr.p3?'이상':'미만')+' (령 §34의5⑦). 차액 <b>전액</b>이 거래이익입니다.</div>'
-      :'<div class="note warn"><b>현저한 대가 요건 미달</b> — 차액 '+won(r.R)+'원이 시가의 30%('+won(Math.floor(r.thr.need))+'원) 미만이고 3억원 미만입니다(령 §34의5⑦). §45의5 과세 대상이 아닙니다.</div>';
+      ?'<div class="note ok"><b>현저한 대가 요건 충족</b>: 차액 '+won(r.R)+'원이 시가의 30%('+won(Math.floor(r.thr.need))+'원) '+(r.thr.p30?'이상':'미만')+' · 3억원 '+(r.thr.p3?'이상':'미만')+' (령 §34의5⑦). 차액 <b>전액</b>이 거래이익입니다.</div>'
+      :'<div class="note warn"><b>현저한 대가 요건 미달</b>: 차액 '+won(r.R)+'원이 시가의 30%('+won(Math.floor(r.thr.need))+'원) 미만이고 3억원 미만입니다(령 §34의5⑦). §45의5 과세 대상이 아닙니다.</div>';
   }
   if(!r.noBenefit&&!thrFail){
-    if(r.selfPct>0)notes+='<div class="note warn"><b>자기증여 제외</b> — 거래상대방(증여자) 본인의 보유비율 '+pctTxt(r.selfPct)+' 해당분 '+won(r.selfSum)+'원은 본인이 본인에게 증여한 것이어서 과세제외했습니다(서면4팀-1078, 2007.4.3.). 상대방이 여러 명이면 각자 자기 증여분만 제외되는지 개별 검토하세요.</div>';
+    if(r.selfPct>0)notes+='<div class="note warn"><b>자기증여 제외</b>: 거래상대방(증여자) 본인의 보유비율 '+pctTxt(r.selfPct)+' 해당분 '+won(r.selfSum)+'원은 본인이 본인에게 증여한 것이어서 과세제외했습니다(서면4팀-1078, 2007.4.3.). 상대방이 여러 명이면 각자 자기 증여분만 제외되는지 개별 검토하세요.</div>';
     if(r.lossNote)notes+='<div class="note warn">각 사업연도 소득금액이 0 이하(결손)로 입력되어 <b>법인세 상당액을 0</b>으로 계산했습니다. 산출세액 입력값과 함께 확인하세요.</div>';
-    if(r.ratioCapped)notes+='<div class="note warn">거래이익이 각 사업연도 소득금액을 초과 — 비율은 <b>1</b>로 한정했습니다(령 §34의5④2나).</div>';
-    notes+='<div class="note warn">증여일부터 <b>소급 1년 이내 동일한 거래</b>가 여러 건이면 각 이익을 합산해 계산·판정합니다(§43②). 이 화면은 단건 기준 — 합산할 거래가 있으면 거래이익을 합산해 입력하세요.</div>';
+    if(r.ratioCapped)notes+='<div class="note warn">거래이익이 각 사업연도 소득금액을 초과: 비율은 <b>1</b>로 한정했습니다(령 §34의5④2나).</div>';
+    notes+='<div class="note warn">증여일부터 <b>소급 1년 이내 동일한 거래</b>가 여러 건이면 각 이익을 합산해 계산·판정합니다(§43②). 이 화면은 단건 기준: 합산할 거래가 있으면 거래이익을 합산해 입력하세요.</div>';
     if(r.anyTax){
       var capAny=false;
       for(var j=0;j<r.rows.length;j++)if(r.rows[j].taxable&&r.rows[j].capHit)capAny=true;
-      if(capAny)notes+='<div class="note warn"><b>한도(법 §45의5②)</b>: 의제이익에 대한 증여세액이 [직접 증여 시 증여세 상당액 − 법인세 상당액 × 보유비율]을 초과하면 초과분은 없는 것으로 봅니다. 위 비교는 기본세율 산출세액 기준(합산·공제·할증 미반영) <b>참고용</b> — 실제 한도는 결정세액 단계에서 검토하세요.</div>';
-      notes+='<div class="note warn">증여자는 거래상대방(지배주주·그 특수관계인)입니다. §45의5는 <b>합산배제 대상이 아니므로</b> 동일 증여자의 10년 내 증여와 합산(§47) — 증여세 계산 탭에서 관계·기증여를 입력하세요. 상대방이 법인이면 관계는 &lsquo;기타&rsquo;(공제 없음). 증여자 연대납부의무는 제외(§4의2⑥).</div>';
-      if(r.kind==='G'||r.kind==='L')notes+='<div class="note warn" style="font-size:11px">금전 무상·저리 대부분은 <b>연 단위</b>로 각 연도 이익을 별도 판정합니다(41조의4 준용). 1회성 자산 거래를 매년 반복 과세로 구성하면 안 되고(대법원 2025두30103 — 증여일은 거래일 1회), 대부금 채권의 상사시효(5년) 완성 이후 연도분은 과세할 수 없습니다(대법원 2025두34494).</div>';
+      if(capAny)notes+='<div class="note warn"><b>한도(법 §45의5②)</b>: 의제이익에 대한 증여세액이 [직접 증여 시 증여세 상당액 − 법인세 상당액 × 보유비율]을 초과하면 초과분은 없는 것으로 봅니다. 위 비교는 기본세율 산출세액 기준(합산·공제·할증 미반영) <b>참고용</b>: 실제 한도는 결정세액 단계에서 검토하세요.</div>';
+      notes+='<div class="note warn">증여자는 거래상대방(지배주주·그 특수관계인)입니다. §45의5는 <b>합산배제 대상이 아니므로</b> 동일 증여자의 10년 내 증여와 합산(§47): 증여세 계산 탭에서 관계·기증여를 입력하세요. 상대방이 법인이면 관계는 &lsquo;기타&rsquo;(공제 없음). 증여자 연대납부의무는 제외(§4의2⑥).</div>';
+      if(r.kind==='G'||r.kind==='L')notes+='<div class="note warn" style="font-size:11px">금전 무상·저리 대부분은 <b>연 단위</b>로 각 연도 이익을 별도 판정합니다(41조의4 준용). 1회성 자산 거래를 매년 반복 과세로 구성하면 안 되고(대법원 2025두30103: 증여일은 거래일 1회), 대부금 채권의 상사시효(5년) 완성 이후 연도분은 과세할 수 없습니다(대법원 2025두34494).</div>';
     }else{
-      notes+='<div class="note warn">개인별 증여의제이익이 모두 1억원 미만 — 과세 대상이 아닙니다(령 §34의5⑤). 소급 1년 내 동일 거래가 있으면 합산 후 다시 판정하세요.</div>';
+      notes+='<div class="note warn">개인별 증여의제이익이 모두 1억원 미만: 과세 대상이 아닙니다(령 §34의5⑤). 소급 1년 내 동일 거래가 있으면 합산 후 다시 판정하세요.</div>';
     }
     if(inp.fy){
       var cdl=f45CorpDL(inp.fy,inp.sin?4:3);
       if(cdl){
         var gdl=f45GiftDL(cdl);
-        notes+='<div class="note ok"><b>신고기한</b> — '+(inp.date?('증여일(거래일) '+inp.date+' · '):'')
+        notes+='<div class="note ok"><b>신고기한</b>: '+(inp.date?('증여일(거래일) '+inp.date+' · '):'')
           +'특정법인 법인세 신고기한 '+fmtDate(cdl)+'이 속하는 달의 말일부터 3개월 → <b>'+fmtDate(gdl)+'</b>까지 (§68① 단서)</div>';
       }
     }
@@ -3095,7 +3157,7 @@ window.f45UseGift=function(v,date){
   window.mainSetGifts([{date:(date||''),value:v}]);
 };
 
-var PLACEHOLDER='<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하고 <b>산정</b>을 누르세요.</div></div>';
+var PLACEHOLDER='<div class="placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 7l3-3M3 7l3 3M21 17H3M21 17l-3-3M21 17l-3 3"/></svg><div>거래 정보를 입력하면 자동으로 산정됩니다.</div></div>';
 
 (function(){
   var radios=document.querySelectorAll('#pane45 input[type=radio]');
@@ -3118,12 +3180,11 @@ window.__blk.push(8);
 
 <script>
 (function(){
-  var b=document.getElementById('jsDead');
+  /* 블록 실행 확인: 1~8이 모두 돌았으면 정상 초기화 */
   var got=(window.__blk||[]).join(',');
-  if(got==='1,2,3,4,5,6,7,8'){ b.style.display='none'; return; }
-  b.innerHTML='⚠️ <b>진단</b> — 스크립트 블록 일부만 실행되었습니다: 실행 ['+(got||'없음')
-    +'] / 정상 [1,2,3,4,5,6,7,8]. 파일이 전송 중 잘렸을 가능성이 큽니다. 파일 크기(속성)를 원본과 비교하고, 이 문구를 그대로 알려주세요. '
-    +'계산이 필요하면 엑셀판(증여세_계산기_업무망.xlsx)을 사용하세요.';
+  if(got==='1,2,3,4,5,6,7,8'){ window.__ydReady=true; }
+  else { window.__jsErr.push({m:'스크립트 블록 일부만 실행 ['+(got||'없음')+'] / 정상 [1~8]',l:0,c:0}); }
+  if(window.__ydLoaded) __showErr();
 })();
 </script>
 </body>
