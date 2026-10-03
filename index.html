@@ -41,6 +41,16 @@ main{margin-left:232px;padding:32px;max-width:1560px;}
 .printhead{display:none;}
 .tab-pane{display:none;}
 .tab-pane.active{display:block;}
+.phead{display:flex;align-items:flex-end;margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--navy);}
+.phead .ptitle{flex:1 1 auto;min-width:0;margin:0;padding:0;border:0;}
+.phead .btn{flex:0 0 auto;margin-left:16px;}
+.btn{background:var(--navy);color:#fff;border:1px solid var(--navy);min-height:34px;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:bold;line-height:1.4;white-space:nowrap;}
+.btn:hover{background:var(--blue);border-color:var(--blue);}
+.btn:focus{outline:2px solid #4A81C4;outline-offset:2px;}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--ink3);}
+.btn.ghost:hover{background:var(--soft);border-color:var(--ink2);}
+.btn[disabled]{color:var(--ink2);cursor:default;}
+#printSheet{display:none;}
 .ptitle{margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--navy);font-size:22px;font-weight:bold;color:var(--navy);letter-spacing:-.01em;line-height:1.4;}
 .ptitle .law{font-size:13px;font-weight:normal;color:var(--ink2);margin-left:8px;letter-spacing:0;}
 .disc{margin:0 0 24px;font-size:12px;color:var(--ink2);line-height:1.6;}
@@ -243,6 +253,61 @@ input.de-pick{position:absolute;right:0;bottom:0;width:1px!important;height:1px;
 }
 @media(max-width:620px){.grid2{grid-template-columns:1fr;}}
 
+/* 인쇄: 계산내역서 시트(인쇄 버튼·Ctrl+P, 결과가 있을 때) */
+@media print{
+  body.printing>*:not(#printSheet){display:none!important;}
+  body.printing #printSheet{display:block;}
+  #printSheet{font-size:9.5pt;line-height:1.45;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #printSheet .ps-head{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:5pt;border-bottom:2pt solid #0B2E58;margin-bottom:4pt;}
+  #printSheet .ps-doc{font-size:17pt;font-weight:bold;color:#0B2E58;letter-spacing:-.02em;line-height:1.25;}
+  #printSheet .ps-title{font-size:10.5pt;font-weight:bold;margin-top:2pt;}
+  #printSheet .ps-title span{font-size:8.5pt;font-weight:normal;color:#4A5058;margin-left:4pt;}
+  #printSheet .ps-meta{font-size:8pt;color:#4A5058;text-align:right;line-height:1.5;}
+  #printSheet .ps-sec{font-size:10.5pt;font-weight:bold;color:#0B2E58;margin:12pt 0 5pt;padding-left:6pt;border-left:3pt solid #0B2E58;line-height:1.2;break-after:avoid;page-break-after:avoid;}
+  #printSheet .ps-cap{font-size:9pt;font-weight:bold;margin:8pt 0 3pt;break-after:avoid;page-break-after:avoid;}
+  #printSheet .ps-none{font-size:9pt;color:#4A5058;margin:0;}
+  #printSheet table{width:100%;border-collapse:collapse;}
+  #printSheet table.ps-kv{border-top:1.2pt solid #000;border-bottom:1.2pt solid #000;font-size:8.8pt;table-layout:fixed;}
+  #printSheet table.ps-kv col.k{width:19%;}
+  #printSheet table.ps-kv th,#printSheet table.ps-kv td{padding:3pt 5pt;border-bottom:.6pt solid #B8BEC6;text-align:left;vertical-align:top;font-weight:normal;word-break:keep-all;overflow-wrap:break-word;}
+  #printSheet table.ps-kv th{background:#EEF1F4;color:#16181C;font-weight:bold;}
+  #printSheet table.ps-kv td{font-variant-numeric:tabular-nums;}
+  #printSheet table.ps-list{border-top:1.2pt solid #000;border-bottom:1.2pt solid #000;font-size:8.8pt;}
+  #printSheet table.ps-list th{background:#EEF1F4;color:#16181C;font-weight:bold;padding:3pt 5pt;border-bottom:.6pt solid #000;text-align:center;}
+  #printSheet table.ps-list td{padding:3pt 5pt;border-bottom:.6pt solid #B8BEC6;text-align:center;font-variant-numeric:tabular-nums;}
+  #printSheet table.ps-list .r{text-align:right;}
+  /* 결과(화면 결과 칼럼 복제본) */
+  #printSheet .ps-res .card{margin:0 0 8pt;padding:0;border:0;background:none;}
+  #printSheet .ps-res .res-head,#printSheet .ps-res .top{display:flex;flex-wrap:wrap;align-items:baseline;margin:0 0 6pt;padding:6pt 8pt;border:1.2pt solid #0B2E58;border-left-width:4pt;background:#F4F7FB;}
+  #printSheet .ps-res .res-head .lbl,#printSheet .ps-res .top .t1{flex:1 1 auto;font-size:9.5pt;font-weight:bold;color:#16181C;}
+  #printSheet .ps-res .res-head .amt,#printSheet .ps-res .top .t2{flex:0 0 auto;font-size:17pt;font-weight:bold;color:#0B2E58;margin:0;}
+  #printSheet .ps-res .res-head .amt small{font-size:10pt;}
+  #printSheet .ps-res .res-head .sub2,#printSheet .ps-res .top .t3{flex:1 1 100%;font-size:8pt;color:#4A5058;margin-top:1pt;}
+  #printSheet .ps-res .pill{background:none;border:.6pt solid #4A5058;color:#16181C;font-size:7.5pt;}
+  #printSheet .ps-res .sec-title,#printSheet .ps-res .h3{font-size:9.5pt;font-weight:bold;color:#0B2E58;margin:9pt 0 3pt;padding:0;break-after:avoid;page-break-after:avoid;}
+  #printSheet .ps-res table.calc-tbl{font-size:9pt;border-top:1.2pt solid #000;border-bottom:1.2pt solid #000;}
+  #printSheet .ps-res table.calc-tbl td{padding:2.5pt 4pt;border-bottom:.6pt solid #B8BEC6;color:#16181C;}
+  #printSheet .ps-res table.calc-tbl td.law{font-size:7.5pt;color:#4A5058;}
+  #printSheet .ps-res table.calc-tbl tr.major td{background:#F4F7FB;font-weight:bold;}
+  #printSheet .ps-res table.calc-tbl tr.final td{background:#E9F0F8;color:#0B2E58;font-size:10pt;border-top:1.2pt solid #000;}
+  #printSheet .ps-res .multi-scroll{overflow:visible;}
+  #printSheet .ps-res table.multi-tbl,#printSheet .ps-res table.rs{min-width:0;font-size:8pt;border-top:1.2pt solid #000;border-bottom:1.2pt solid #000;}
+  #printSheet .ps-res table.multi-tbl th,#printSheet .ps-res table.rs th{background:#EEF1F4;color:#16181C;border-top:0;border-bottom:.6pt solid #000;padding:2.5pt 3pt;font-size:7.5pt;}
+  #printSheet .ps-res table.multi-tbl td,#printSheet .ps-res table.rs td{padding:2.5pt 3pt;border-bottom:.6pt solid #B8BEC6;color:#16181C;}
+  #printSheet .ps-res table.multi-tbl tr.sum td,#printSheet .ps-res table.rs tr.sum td{background:#E9F0F8;color:#0B2E58;border-top:1.2pt solid #000;}
+  #printSheet .ps-res table.multi-tbl tr.farm td,#printSheet .ps-res table.multi-tbl tr.taxed td{background:#FBFCFD;}
+  #printSheet .ps-res .formula-box,#printSheet .ps-res .fm{font-size:8.3pt;color:#16181C;background:#FBFCFD;border:.6pt solid #B8BEC6;border-left:2.5pt solid #8A9099;padding:4pt 6pt;margin:4pt 0;}
+  #printSheet .ps-res .note,#printSheet .ps-res .msg{font-size:8.3pt!important;color:#16181C;padding:3pt 0 3pt 10pt!important;margin:0!important;border:0!important;background:none!important;position:relative;}
+  #printSheet .ps-res table.rs td{text-align:right;}
+  #printSheet .ps-res table.rs th:first-child,#printSheet .ps-res table.rs td:first-child,#printSheet .ps-res table.rs td.dt{text-align:center;}
+  #printSheet .ps-res table.rs td.hit{font-weight:bold;color:#0B2E58;}
+  #printSheet .ps-res .note:before,#printSheet .ps-res .msg:before{content:"※";position:absolute;left:0;top:3pt;}
+  #printSheet .ps-res .note.red,#printSheet .ps-res .msg.no{font-weight:bold;}
+  #printSheet .ps-res .audit{font-size:8.3pt;color:#16181C;border-top:.6pt solid #B8BEC6;margin-top:8pt;padding:4pt 0;}
+  #printSheet .ps-res .audit .at{color:#0B2E58;}
+  #printSheet .ps-foot{margin-top:14pt;padding-top:5pt;border-top:.6pt solid #000;font-size:8pt;color:#4A5058;}
+  #printSheet tr,#printSheet .formula-box,#printSheet .res-head{break-inside:avoid;page-break-inside:avoid;}
+}
 /* 인쇄: A4 계산내역서(결과 중심) */
 @media print{
   @page{size:A4;margin:14mm 14mm;}
@@ -268,7 +333,7 @@ input.de-pick{position:absolute;right:0;bottom:0;width:1px!important;height:1px;
 </style>
 </head>
 <body>
-<div id="jsDead" style="background:#c00000;color:#fff;padding:8px 12px;font-size:13px;font-weight:bold;">스크립트가 실행되지 않았습니다: 파일이 전송 중 변형되었을 수 있습니다(원본 약 211KB). 이 화면을 사진으로 남겨 주세요.</div>
+<div id="jsDead" style="background:#c00000;color:#fff;padding:8px 12px;font-size:13px;font-weight:bold;">스크립트가 실행되지 않았습니다: 파일이 전송 중 변형되었을 수 있습니다(원본 약 226KB). 이 화면을 사진으로 남겨 주세요.</div>
 <script>
 /* 진단용 (ES5). 내부망은 파일 반출이 안 되므로 배너 사진이 유일한 디버깅 수단. 정상 실행 시 배너 숨김, 실행 중 오류 발생 시 다시 표시 */
 window.__jsErr = window.__jsErr || []; window.__blk = window.__blk || [];
@@ -295,7 +360,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 <div class="printhead"><b>증여세 계산내역서</b><span>상증법 기준 · 실무 보조용</span></div>
 
 <div id="paneMain" class="tab-pane active">
-<h1 class="ptitle">증여세 계산 <span class="law">상증법 §47·§53·§53의2·§55~§58·§68~§70 · 조특법 §71</span></h1>
+<div class="phead"><h1 class="ptitle">증여세 계산 <span class="law">상증법 §47·§53·§53의2·§55~§58·§68~§70 · 조특법 §71</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>업무참고용 계산 보조도구</b>입니다. 부정행위 판정·재산평가·합산 동일인 범위 등 사실관계 확정이 필요한 항목은 입력값에 따라 결과가 달라집니다. 실제 부과·결정 시 법령 원문과 사실관계로 재확인하세요.</div>
 
 <div class="wrap">
@@ -569,7 +634,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 </div><!-- /paneMain -->
 
 <div id="pane35" class="tab-pane">
-<h1 class="ptitle">저가양수·고가양도 <span class="law">상증법 §35 · 상증령 §26</span></h1>
+<div class="phead"><h1 class="ptitle">저가양수·고가양도 <span class="law">상증법 §35 · 상증령 §26</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>산정 보조도구</b>: 시가는 별도 확정 기준(§60)에 따르며 여기서는 입력값으로 받습니다. 비특수관계인 거래는 <b>거래관행상 정당한 사유가 없을 때</b>만 과세됩니다(§35②).</div>
 
 <div class="wrap">
@@ -658,7 +723,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 </div><!-- /pane35 -->
 
 <div id="pane41" class="tab-pane">
-<h1 class="ptitle">금전무상대부 이익 <span class="law">상증법 §41의4 · 상증령 §31의4</span></h1>
+<div class="phead"><h1 class="ptitle">금전무상대부 이익 <span class="law">상증법 §41의4 · 상증령 §31의4</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>산정 보조도구</b>: 금전 무상대부 이익(상증법 41조의4). 거래 내역(차입·원금상환·이자지급)만 입력하면 1년 단위 갱신·선입선출 충당·적수 안분·소급 1년 합산(43조 2항)까지 자동 산정합니다. 적정이자율 연 4.6%(2016.3.20 이전 8.5%). 검증본 로직 v2026.07.18.</div>
 <div class="p41main">
   <section class="panel" id="p41In">
@@ -704,7 +769,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 </div><!-- /pane41 -->
 
 <div id="pane42" class="tab-pane">
-<h1 class="ptitle">부동산 임대용역 <span class="law">상증법 §42 · 상증령 §32</span></h1>
+<div class="phead"><h1 class="ptitle">부동산 임대용역 <span class="law">상증법 §42 · 상증령 §32</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>산정 보조도구</b>: 임대용역 시가 = 평가액×2%(보증금 차감 없음). <b>무상 1천만원↑ / 저가 차액 시가30%↑</b>일 때 과세, 개시일부터 1년 단위 재과세(§42②). 비특수관계인은 정당한 사유가 없을 때만 과세.</div>
 
 <div class="wrap">
@@ -790,7 +855,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 </div><!-- /pane42 -->
 
 <div id="pane37" class="tab-pane">
-<h1 class="ptitle">부동산 무상사용 <span class="law">상증법 §37 · 상증령 §27</span></h1>
+<div class="phead"><h1 class="ptitle">부동산 무상사용 <span class="law">상증법 §37 · 상증령 §27</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>산정 보조도구</b>: 5년 무상사용이익 = 평가액×2%×3.79079(연금현가). <b>1억원 이상</b>만 과세(평가액 약 13.2억↑), 개시일이 증여일·5년 단위 재과세(§37). 동거주택 제외. 비특수관계인은 정당한 사유가 없을 때만 과세.</div>
 
 <div class="wrap">
@@ -870,7 +935,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 </div><!-- /pane37 -->
 
 <div id="pane39" class="tab-pane">
-<h1 class="ptitle">불균등 증자·감자 <span class="law">상증법 §39·§39의2 · 상증령 §29·§29의2</span></h1>
+<div class="phead"><h1 class="ptitle">불균등 증자·감자 <span class="law">상증법 §39·§39의2 · 상증령 §29·§29의2</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>산정 보조도구</b>: 1주당 평가가액(시가)은 §60·§63에 따라 별도 확정한 값을 입력합니다. 유가증권·코스닥 상장법인이 유가증권 모집방법(50인 이상 청약 권유 등)으로 배정하는 경우는 §39①1의 &lsquo;배정&rsquo;에서 제외되어 과세되지 않습니다(가목 괄호·령 §29③: 다·라목 직접배정에도 미침).</div>
 
 <div class="wrap">
@@ -1109,7 +1174,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
 </div><!-- /pane39 -->
 
 <div id="pane45" class="tab-pane">
-<h1 class="ptitle">특정법인과의 거래이익 <span class="law">상증법 §45의5 · 상증령 §34의5</span></h1>
+<div class="phead"><h1 class="ptitle">특정법인과의 거래이익 <span class="law">상증법 §45의5 · 상증령 §34의5</span></h1><button type="button" class="btn ghost" onclick="printCalc(this)">계산내역서 인쇄</button></div>
 <div class="disc"><b>산정 보조도구</b>: 상증세법 45조의5 특정법인과의 거래를 통한 이익의 증여 의제. 수증자는 지배주주와 그 친족(지배주주등) <b>각각</b>이고, 개인별 증여의제이익이 <b>1억원 이상</b>인 사람만 과세됩니다(령 §34의5⑤). 시가는 상증법 §60이 아니라 <b>법인세법 시행령 §89</b>(부당행위 시가) 기준으로 별도 확정한 값을 입력하세요.</div>
 
 <div class="wrap">
@@ -1378,6 +1443,122 @@ new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){
   if(n.matches&&n.matches('input[type=date]'))easeDate(n);
   if(n.querySelectorAll)n.querySelectorAll('input[type=date]').forEach(easeDate);
 }}).observe(document.body,{childList:true,subtree:true});
+// ─ 계산내역서 인쇄(A4): 활성 탭의 입력 요약 + 계산 결과를 별도 인쇄 시트로 조립한다.
+//   화면의 입력 칼럼을 그대로 찍지 않고 「항목 | 내용」 표로 정리해 한 장 흐름으로 출력.
+//   버튼(printCalc)과 Ctrl+P(beforeprint) 모두 같은 시트를 쓴다. 결과가 없으면 기존 인쇄 규칙으로 둔다.
+function psEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function psText(el){return el?el.textContent.replace(/\s+/g,' ').trim():'';}
+function psClean(el){if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('.hint,.tip,.sub,.note').forEach(x=>x.remove());return psText(c).replace(/\s*[:：]\s*$/,'');}
+function psShown(el,stop){for(let e=el;e&&e!==stop;e=e.parentElement){if(e.hidden||getComputedStyle(e).display==='none')return false;}return true;}
+function psCtl(row){return [...row.querySelectorAll('input,select')].filter(e=>!e.classList.contains('de-pick'));}
+function psOpt(sel){const o=sel.options[sel.selectedIndex];return o?psText(o):'';}
+// 한 행(.row/.fld) → [[항목, 내용], …]
+function psRow(row){
+  const out=[], ctl=psCtl(row);
+  const lbs=[...row.querySelectorAll('label.fl,.lb')];
+  // 라벨이 여러 개인 행(예: 과소신고 납부세액 / 그 중 부정행위분): 라벨마다 바로 뒤 입력칸과 짝
+  if(lbs.length>1){
+    lbs.forEach(lb=>{let n=lb.nextElementSibling;while(n&&!/^(INPUT|SELECT)$/.test(n.tagName))n=n.nextElementSibling;
+      if(n&&n.value&&n.value.trim())out.push([psClean(lb),n.value.trim()]);});
+    return out;
+  }
+  const radios=ctl.filter(e=>e.type==='radio');
+  const sel=ctl.filter(e=>e.tagName==='SELECT');
+  const texts=ctl.filter(e=>e.tagName==='INPUT'&&/^(text|number|date)$/.test(e.type));
+  const chks=ctl.filter(e=>e.type==='checkbox');
+  let name=lbs.length?psClean(lbs[0]):'';
+  if(radios.length){const r=radios.find(e=>e.checked);if(r){
+    // 라벨 연결: for= 라벨 → 감싼 라벨 → 바로 뒤 글자 순
+    let v=r.id?psText(row.querySelector('label[for="'+r.id+'"]')):'';
+    if(!v&&r.closest('label')&&!r.closest('label').classList.contains('fl'))v=psText(r.closest('label'));
+    if(!v&&r.nextSibling)v=String(r.nextSibling.textContent||'').trim();
+    out.push([name,v||r.value]);}return out;}
+  if(!texts.length&&!sel.length&&chks.length===1){
+    if(!chks[0].checked)return out;
+    const b=row.querySelector('label b');
+    out.push([b?psText(b):psText(row).split(/[:(]/)[0].trim(),'해당']);return out;
+  }
+  if(sel.length===1&&!texts.length){out.push([name,psOpt(sel[0])]);return out;}
+  const vals=texts.filter(e=>e.value.trim()).map(e=>e.value.trim());
+  if(vals.length)out.push([name,vals.join(' / ')]);
+  return out;
+}
+// 목록형 입력 → 표
+function psGiftTable(){
+  const useRL=$('useRowLimit')&&$('useRowLimit').checked;
+  const items=[...document.querySelectorAll('#giftList .gift-item')].filter(it=>it.querySelector('.g-amount').value.trim());
+  if(!items.length)return '';
+  let h='<table class="ps-list"><thead><tr><th>회차</th><th>증여일</th><th class="r">증여재산가액</th><th>조특법 §71</th>'+(useRL?'<th class="r">공제한도</th>':'')+'</tr></thead><tbody>';
+  items.forEach((it,i)=>{h+='<tr><td>'+(i+1)+'</td><td>'+psEsc(it.querySelector('.g-date').value||'미입력')+'</td><td class="r">'+psEsc(it.querySelector('.g-amount').value)+'원</td><td>'+(it.querySelector('.g-farmchk').checked?'감면농지':'-')+'</td>'
+    +(useRL?'<td class="r">'+psEsc(it.querySelector('.g-limit').value?it.querySelector('.g-limit').value+'원':'자동')+'</td>':'')+'</tr>';});
+  return h+'</tbody></table>';
+}
+function psTxnTable(row){
+  const trs=[...row.querySelectorAll('table.io tr')].filter(tr=>tr.querySelector('select')&&tr.querySelector('.e-amt').value.trim());
+  if(!trs.length)return '';
+  let h='<table class="ps-list"><thead><tr><th>순번</th><th>일자</th><th>구분</th><th class="r">금액</th></tr></thead><tbody>';
+  trs.forEach((tr,i)=>{h+='<tr><td>'+(i+1)+'</td><td>'+psEsc(tr.querySelector('.e-date').value||'미입력')+'</td><td>'+psEsc(psOpt(tr.querySelector('select')))+'</td><td class="r">'+psEsc(tr.querySelector('.e-amt').value)+'원</td></tr>';});
+  return h+'</tbody></table>';
+}
+function psHolderTable(row){
+  const rs=[...row.querySelectorAll('.f45hr')].filter(r=>r.querySelector('.f45hp').value.trim()||r.querySelector('.f45hn').value.trim());
+  if(!rs.length)return '';
+  let h='<table class="ps-list"><thead><tr><th>순번</th><th>성명</th><th class="r">보유비율</th><th>거래상대방</th></tr></thead><tbody>';
+  rs.forEach((r,i)=>{h+='<tr><td>'+(i+1)+'</td><td>'+psEsc(r.querySelector('.f45hn').value||'-')+'</td><td class="r">'+psEsc(r.querySelector('.f45hp').value)+'%</td><td>'+(r.querySelector('.f45hs').checked?'예(과세제외)':'-')+'</td></tr>';});
+  return h+'</tbody></table>';
+}
+function psToday(){const d=new Date();return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');}
+function buildPrintSheet(){
+  const old=$('printSheet');if(old)old.remove();
+  const pane=document.querySelector('.tab-pane.active');if(!pane)return false;
+  const inCol=pane.querySelector('.wrap>div:first-child')||pane.querySelector('.p41main>section:first-child');
+  const resCol=pane.querySelector('.wrap>div:last-child')||pane.querySelector('.p41main>section:last-child');
+  if(!inCol||!resCol||!resCol.querySelector('.res-head,.top'))return false;
+  // ① 입력 요약
+  const kv=[], lists=[];
+  [...inCol.querySelectorAll('.row,.fld')].filter(r=>!r.querySelector('.row,.fld')&&psShown(r,pane)).forEach(r=>{
+    if(r.querySelector('#giftList')){const t=psGiftTable();if(t)lists.push(['증여 회차',t]);return;}
+    if(r.querySelector('table.io')){const t=psTxnTable(r);if(t)lists.push(['거래 내역',t]);return;}
+    if(r.querySelector('.f45hr')){const t=psHolderTable(r);if(t)lists.push(['지배주주등 주식보유비율',t]);return;}
+    psRow(r).forEach(p=>{if(p[0]&&p[1])kv.push(p);});
+  });
+  let inH='';
+  if(kv.length){inH+='<table class="ps-kv"><colgroup><col class="k"><col><col class="k"><col></colgroup><tbody>';
+    for(let i=0;i<kv.length;i+=2){const a=kv[i],b=kv[i+1];
+      inH+='<tr><th>'+psEsc(a[0])+'</th><td>'+psEsc(a[1])+'</td>'+(b?'<th>'+psEsc(b[0])+'</th><td>'+psEsc(b[1])+'</td>':'<th></th><td></td>')+'</tr>';}
+    inH+='</tbody></table>';}
+  lists.forEach(l=>{inH+='<div class="ps-cap">'+psEsc(l[0])+'</div>'+l[1];});
+  // ② 계산 결과: 결과 칼럼 복제 후 버튼·참고 접힘·입력·id 제거
+  const res=resCol.cloneNode(true);
+  res.querySelectorAll('button,details,.btnbar,#btnSendWrap,.placeholder,.empty,input,select,script,svg').forEach(e=>e.remove());
+  res.querySelectorAll('.card>h2,section>h2').forEach(e=>e.remove());
+  // 화면 전용 안내(보내기·탭 이동)는 출력에서 뺀다
+  res.querySelectorAll('p,div').forEach(e=>{if(!e.querySelector('table,div,p')&&/탭으로 이동|탭의 회차|탭으로 보내|보내기/.test(e.textContent))e.remove();});
+  if(res.tagName==='SECTION'&&res.firstElementChild&&res.firstElementChild.tagName==='H2')res.firstElementChild.remove();
+  [res].concat([...res.querySelectorAll('[id]')]).forEach(e=>e.removeAttribute('id'));
+  res.querySelectorAll('[style*="text-align:right"]').forEach(e=>{if(!e.textContent.trim())e.remove();});
+  // 머리·꼬리
+  const pt=pane.querySelector('.ptitle');const title=pt?psText(pt.firstChild?pt.childNodes[0]:pt):'';
+  const law=pt&&pt.querySelector('.law')?psText(pt.querySelector('.law')):'';
+  const ver=psText(document.querySelector('.side header .yr'));
+  const s=document.createElement('div');s.id='printSheet';
+  s.innerHTML='<div class="ps-head"><div><div class="ps-doc">증여세 계산내역서</div><div class="ps-title">'+psEsc(title)+(law?' <span>'+psEsc(law)+'</span>':'')+'</div></div>'
+    +'<div class="ps-meta">작성일 '+psToday()+'<br>증여세 계산기 '+psEsc(ver)+'</div></div>'
+    +'<div class="ps-sec">1. 입력 내용</div>'+(inH||'<p class="ps-none">입력값 없음</p>')
+    +'<div class="ps-sec">2. 계산 결과</div><div class="ps-res">'+res.innerHTML+'</div>'
+    +'<div class="ps-foot">본 내역서는 입력값에 따른 실무 보조용 계산 결과입니다. 부과·결정 시 법령 원문과 사실관계로 재확인하십시오.</div>';
+  document.body.appendChild(s);document.body.classList.add('printing');
+  return true;
+}
+function printCalc(btn){
+  if(!buildPrintSheet()){
+    if(btn){const t=btn.textContent;btn.textContent='입력 후 인쇄 가능';btn.disabled=true;setTimeout(()=>{btn.textContent=t;btn.disabled=false;},1500);}
+    return;
+  }
+  window.print();
+}
+window.addEventListener('beforeprint',()=>{if(!$('printSheet'))buildPrintSheet();});
+window.addEventListener('afterprint',()=>{document.body.classList.remove('printing');const s=$('printSheet');if(s)s.remove();});
 window.__blk.push(1);
 </script>
 
@@ -1925,7 +2106,7 @@ function render(r){
   const auditBlock=`<div class="sec-title">계산명세 (당해 증여, audit)</div><div class="audit"><div class="at">상증세법 별지 제10호서식 흐름</div>`+a.map(x=>`<div>· ${x}</div>`).join('')+`</div>`;
 
   const printBtn=`<div style="padding:12px 16px;border-top:1px solid var(--line);text-align:right">
-    <button onclick="window.print()" style="background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;color:var(--muted)">계산내역서 인쇄</button></div>`;
+    <button type="button" class="btn ghost" onclick="printCalc(this)" style="background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;color:var(--muted)">계산내역서 인쇄</button></div>`;
 
   $('result').innerHTML = head + body + notes + penBlock + auditBlock + printBtn;
 }
