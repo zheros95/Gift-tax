@@ -333,7 +333,7 @@ input.de-pick{position:absolute;right:0;bottom:0;width:1px!important;height:1px;
 </style>
 </head>
 <body>
-<div id="jsDead" style="background:#c00000;color:#fff;padding:8px 12px;font-size:13px;font-weight:bold;">스크립트가 실행되지 않았습니다: 파일이 전송 중 변형되었을 수 있습니다(원본 약 226KB). 이 화면을 사진으로 남겨 주세요.</div>
+<div id="jsDead" style="background:#c00000;color:#fff;padding:8px 12px;font-size:13px;font-weight:bold;">스크립트가 실행되지 않았습니다: 파일이 전송 중 변형되었을 수 있습니다(원본 약 236KB). 이 화면을 사진으로 남겨 주세요.</div>
 <script>
 /* 진단용 (ES5). 내부망은 파일 반출이 안 되므로 배너 사진이 유일한 디버깅 수단. 정상 실행 시 배너 숨김, 실행 중 오류 발생 시 다시 표시 */
 window.__jsErr = window.__jsErr || []; window.__blk = window.__blk || [];
@@ -488,6 +488,28 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
       <details class="toggle-sec" id="penaltyBox" style="display:none">
         <summary>가산세 계산 옵션 <span class="tw">▾</span></summary>
         <div class="inner">
+          <div class="sec-title" style="border:none;padding:0 0 6px;background:none">처분청 결정·고지: 당초 신고분 차감 (당해 증여)</div>
+          <div class="grid2">
+            <div class="row">
+              <label class="fl">당해 증여분 기납부세액 <span class="hint">당초 신고 시 자진납부한 세액(§58 기납부세액공제와 다름). 총결정세액에서 빼 고지세액 산정 · 무신고면 0</span></label>
+              <input type="text" id="priorPaidG" class="won" inputmode="numeric" placeholder="0">
+            </div>
+            <div class="row">
+              <label class="fl">기납부 납부일 <span class="hint">선택: 비우면 기한 내 납부로 봄. 기한 후 납부면 납부지연을 ① 기한 다음날~납부일(결정세액 전액) ② 납부일 다음날~기준일(결정세액 − 기납부) 두 구간으로 계산</span></label>
+              <input type="date" id="paidDateG">
+            </div>
+          </div>
+          <div class="grid2" id="priorUnderRows" style="display:none">
+            <div class="row">
+              <label class="fl">당초 신고 결정세액 <span class="hint">선택: 신고서상 납부할 세액(가산세 제외). 비우면 기납부세액과 같다고 봄 · 과소신고납부세액 = 결정세액 − 이 금액</span></label>
+              <input type="text" id="priorNetG" class="won" inputmode="numeric" placeholder="= 기납부세액">
+            </div>
+            <div class="row">
+              <label class="fl">당초 신고세액공제 (§69) <span class="hint">선택: 과소신고 결정 시 당초 신고분만 유지(증액분 미적용). 비우면 기납부세액에서 역산 추정</span></label>
+              <input type="text" id="priorRCG" class="won" inputmode="numeric" placeholder="자동(역산 추정)">
+            </div>
+          </div>
+          <div class="sec-title" style="border:none;padding:4px 0 6px;background:none">가산세 옵션</div>
           <div class="row">
             <label class="chk"><input type="checkbox" id="isFraud">
               <span><b>부정행위</b> (차명계좌·명의신탁·이중장부·재산은닉 등) <span class="sub">: 무신고 40%·과소신고 40%</span></span></label>
@@ -497,7 +519,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
               <span>국제거래 관련 부정행위 <span class="sub">: 60% 적용</span></span></label>
           </div>
           <div class="row" id="underRow" style="display:none">
-            <label class="fl">과소신고 납부세액 <span class="hint">정당세액 − 당초신고세액. 비우면 자동(정당 산출세액 기준)</span></label>
+            <label class="fl">과소신고 납부세액 <span class="hint">비우면 자동: 결정세액 − 당초 신고 결정세액. 직접 입력하면 그 값 우선</span></label>
             <input type="text" id="underPayable" class="won" inputmode="numeric" placeholder="자동">
             <label class="fl" style="margin-top:8px">그 중 부정행위분</label>
             <input type="text" id="fraudPayable" class="won" inputmode="numeric" placeholder="0">
@@ -530,7 +552,7 @@ window.addEventListener("load", function () { window.__ydLoaded = true; __showEr
           <div id="latePayInputs" style="display:none">
             <div class="grid2">
               <div class="row">
-                <label class="fl">미납세액 <span class="hint">비우면 자동</span></label>
+                <label class="fl">미납세액 <span class="hint">비우면 자동: 결정세액 − 기납부(납부일 입력 시 두 구간). 직접 입력하면 한 구간</span></label>
                 <input type="text" id="unpaidTax" class="won" inputmode="numeric" placeholder="자동">
               </div>
               <div class="row">
@@ -1668,6 +1690,38 @@ function gatherGifts(){
     .map((g,i)=>Object.assign(g,{inputIdx:i+1}));
 }
 
+// ── 처분청 결정·고지 보조 (순수 함수: test_f45.js에서 검증) ──
+// 과소신고 결정 시 §69 신고세액공제는 당초 신고분만 유지. 입력 없으면 기납부세액에서 역산 추정(기납부 × pct/(100−pct)), 정당 기준 한도 캡
+function priorReportCredit(priorPaid,priorRC,rcRate,full){
+  const pct=Math.round(rcRate*100);
+  const raw=(priorRC===null||priorRC===undefined)?Math.floor((priorPaid||0)*pct/(100-pct)):Math.max(0,priorRC);
+  return {credit:Math.min(raw,full),raw,est:(priorRC===null||priorRC===undefined),capped:raw>full,pct};
+}
+// 납부지연 구간: 기납부 납부일이 법정납부기한 뒤면 ① 기한 다음날~납부일 결정세액 전액 ② 납부일 다음날~기준일 결정세액−기납부.
+// override(미납 직접 입력)면 한 구간. 납부일이 기준일 이후면 전액 미납. dates: Date 객체, paidDate는 null 허용
+function latePayParts(netTax,priorPaid,deadline,baseDate,paidDate,override){
+  const warn=[], parts=[];
+  const afterPaid=Math.max(0,netTax-(priorPaid||0));
+  const pdOK=!!(paidDate&&!isNaN(paidDate));
+  if(override>0){
+    parts.push({k:'',label:'미납세액 직접 입력',from:deadline,to:baseDate,unpaid:override,seg:latePaySegments(override,deadline,baseDate)});
+  } else if(priorPaid>0&&pdOK&&dayNum(paidDate)>dayNum(deadline)){
+    if(dayNum(paidDate)>=dayNum(baseDate)){
+      parts.push({k:'',label:'법정납부기한 다음날 ~ 기준일 (결정세액 전액: 납부일이 기준일 이후)',from:deadline,to:baseDate,unpaid:netTax,seg:latePaySegments(netTax,deadline,baseDate)});
+      warn.push('기납부 납부일이 납부지연 기준일 이후입니다: 기준일까지 결정세액 전액을 미납으로 보아 계산했습니다.');
+    } else {
+      parts.push({k:'①',label:'법정납부기한 다음날 ~ 납부일 (결정세액 전액)',from:deadline,to:paidDate,unpaid:netTax,seg:latePaySegments(netTax,deadline,paidDate)});
+      if(afterPaid>0) parts.push({k:'②',label:'납부일 다음날 ~ 기준일 (결정세액 − 기납부)',from:paidDate,to:baseDate,unpaid:afterPaid,seg:latePaySegments(afterPaid,paidDate,baseDate)});
+    }
+  } else {
+    if(pdOK&&!(priorPaid>0)) warn.push('기납부 납부일을 입력했지만 기납부세액이 0입니다: 납부일은 무시하고 결정세액 전액에 납부지연을 계산했습니다.');
+    parts.push({k:'',label:priorPaid>0?'법정납부기한 다음날 ~ 기준일 (결정세액 − 기납부, 기한 내 납부로 봄)':'법정납부기한 다음날 ~ 기준일',from:deadline,to:baseDate,unpaid:afterPaid,seg:latePaySegments(afterPaid,deadline,baseDate)});
+  }
+  let total=0, days=0, segs=[];
+  for(const p of parts){ total+=p.seg.total; days+=p.seg.days; for(const sg of p.seg.segs) segs.push({...sg,part:p.k}); }
+  return {total,days,segs,parts,split:parts.length>1,unpaid:parts.length===1?parts[0].unpaid:null,warn};
+}
+
 // ── 메인 계산 ──
 function calculate(){
   const rel=$('relation').value, minor=$('m_minor').checked, resident=$('r_yes').checked, daeseup=$('daeseup').checked;
@@ -1679,6 +1733,12 @@ function calculate(){
 
   const gifts=gatherGifts();
   if(!gifts.length) return {empty:true};
+  // 처분청 결정·고지 입력(테스트 스텁과 호환되도록 gatherGifts 뒤에서 읽음)
+  const office=reportType!=='within';                       // 처분청 결정·고지 모드
+  const priorPaid=office?(parseW($('priorPaidG').value)||0):0;   // 당해 증여분 기납부세액(≠ §58 기납부세액공제)
+  const priorNet=(office&&$('priorNetG').value.trim()!=='')?parseW($('priorNetG').value):null;
+  const priorRC=(office&&$('priorRCG').value.trim()!=='')?parseW($('priorRCG').value):null;
+  const paidDateStr=office?$('paidDateG').value:'';
   const nInput=gifts.length;
 
   const warn=[];
@@ -1810,7 +1870,14 @@ function calculate(){
     const rcRate=reportCreditRate(cur.date);
     const reportTypeEff=isLast?reportType:'within';
     const baseForReport=pool==='F' ? 0 : Math.max(0, totalCalc-creditPrepaid-cForeign);
-    const creditReport=(reportTypeEff==='within')?Math.floor(baseForReport*rcRate):0;
+    let creditReport=0, rcPrior=false, rcEst=false, rcCapped=false, rcRaw=0;
+    if(reportTypeEff==='within') creditReport=Math.floor(baseForReport*rcRate);
+    else if(reportTypeEff==='under'&&pool!=='F'){
+      const prc=priorReportCredit(priorPaid,priorRC,rcRate,Math.floor(baseForReport*rcRate));
+      creditReport=prc.credit; rcPrior=true; rcEst=prc.est; rcCapped=prc.capped; rcRaw=prc.raw;
+      if(rcEst&&creditReport>0) warn.push(['warn',`신고세액공제(§69)는 당초 신고분만 유지됩니다: 입력이 없어 기납부세액 ${won(priorPaid)}에서 역산 추정(× ${prc.pct}/${100-prc.pct} = ${won(creditReport)})했습니다. 당초 신고서의 신고세액공제액을 입력하면 그 값을 씁니다.`]);
+      if(rcCapped) warn.push(['warn',`당초 신고세액공제 ${won(rcRaw)}이 정당 산출세액 기준 한도 ${won(Math.floor(baseForReport*rcRate))}를 초과해 한도로 제한했습니다(§69①).`]);
+    }
     const creditTotal=creditPrepaid+cForeign+creditReport;
     const netTax=pool==='F' ? 0 : Math.max(0, totalCalc-creditTotal);   // 감면농지 회차의 세액은 과세부분 회차(G)에서 산출
     const payable=pool==='F' ? 0 : Math.max(0, totalCalc-creditPrepaid-cForeign);
@@ -1821,7 +1888,7 @@ function calculate(){
     rows.push({idx,inputIdx:cur.inputIdx,pool,farm:!!cur.farm,taxedPart:!!cur.taxedPart,fromIdx:cur.fromIdx,
       date:cur.date,value:cur.value,priorEff,merge,addedN:added.length,taxableValue,
       dedCap,dedLimit:L,dedShare,sameOther,otherUsed,attrDed:attrThis,ownBase,partGap,mb,totalDed,taxBase,belowMin,rate:pr.rate,prog:pr.ded,calcTax,surcharge,surRate,daeseup,
-      totalCalc,creditPrepaid,credA,credB,credBnum,credDetail,credPick,cForeign,creditReport,rcRate,reportTypeEff,creditTotal,netTax,payable,
+      totalCalc,creditPrepaid,credA,credB,credBnum,credDetail,credPick,cForeign,creditReport,rcPrior,rcEst,rcCapped,rcRaw,rcRate,reportTypeEff,creditTotal,netTax,payable,
       farmMarginal,farmGross,priorFarmCalc,relief,reliefRoom,reliefUsed5,priorFarmExt,exemptVal,taxedVal,
       marginalTax,marginalSurcharge,grossSurcharge,priorSurcharge,isLast,info,minor,resident});
     // 과세부분 농지가액을 같은 날짜의 일반 회차로 주입(바로 다음 순번) → 일반 증여재산과 합산과세(2314·1454 질의2)
@@ -1839,6 +1906,13 @@ function calculate(){
   const isFraud=$('isFraud').checked, isIntl=$('isIntl').checked&&isFraud;
   const voluntary=$('voluntary').checked, months=parseInt($('monthsAfter').value,10), exemptReason=$('exemptReason').checked;
   const autoPayable=last.payable;
+  const priorNetEff=priorNet===null?priorPaid:Math.max(0,priorNet);     // 당초 신고 결정세액(비우면 기납부)
+  const underBase=Math.max(0,last.netTax-priorNetEff);                  // 과소신고납부세액 = 결정세액 − 당초 신고 결정세액
+  let underAuto=false;
+  if(reportType==='under'){
+    penaltyAudit.push(`과소신고납부세액 = 결정세액 ${won(last.netTax)} − 당초 신고 결정세액 ${won(priorNetEff)}${priorNet===null?'(=기납부)':''} = ${won(underBase)}${parseW($('underPayable').value)?` → 직접 입력 ${won(parseW($('underPayable').value))} 우선`:''}`);
+    if(priorNetEff>last.netTax) warn.push(['warn',`당초 신고 결정세액 ${won(priorNetEff)}이 결정세액 ${won(last.netTax)}보다 큽니다: 과소신고분 없음(감액 경정 사안). 과소신고가산세 0.`]);
+  }
 
   if(reportType==='none'){
     const rate=isFraud?(isIntl?0.60:0.40):0.20;
@@ -1851,7 +1925,7 @@ function calculate(){
   } else if(reportType==='under'){
     if(exemptReason && !isFraud){ reportPenalty=0; penaltyAudit.push(`과소신고가산세 = 0 (면제사유 §47의3④)`); }
     else {
-      let totU=parseW($('underPayable').value); if(!totU) totU=autoPayable;
+      let totU=parseW($('underPayable').value); if(!totU){ totU=underBase; underAuto=true; }
       let fraudU=parseW($('fraudPayable').value); if(isFraud&&fraudU===0) fraudU=totU; fraudU=Math.min(fraudU,totU);
       const genU=Math.max(0,totU-fraudU), fr=isIntl?0.60:0.40;
       const genPen=Math.floor(genU*0.10), fraudPen=Math.floor(fraudU*fr), pen=genPen+fraudPen;
@@ -1866,22 +1940,27 @@ function calculate(){
     if(!deadline) warn.push(['warn','납부지연가산세: 당해(최종) 증여의 증여일을 입력해야 법정납부기한을 산정합니다.']);
     else if(!payDateStr) warn.push(['warn','납부지연가산세: 계산 기준일(자진납부일/고지일)을 입력하세요.']);
     else {
-      let unpaid=parseW($('unpaidTax').value); if(!unpaid) unpaid=last.netTax;
-      const seg=latePaySegments(unpaid,deadline,new Date(payDateStr+'T00:00:00'));
-      latePay=seg.total; latePayInfo={...seg,unpaid,deadline,payDate:new Date(payDateStr+'T00:00:00')};
-      penaltyAudit.push(`납부지연가산세 = 미납 ${won(unpaid)} × ${seg.days}일 (구간분할) = ${won(latePay)}`);
+      const baseDate=new Date(payDateStr+'T00:00:00');
+      const lp=latePayParts(last.netTax,priorPaid,deadline,baseDate,paidDateStr?new Date(paidDateStr+'T00:00:00'):null,parseW($('unpaidTax').value)||0);
+      for(const w of lp.warn) warn.push(['warn',w]);
+      latePay=lp.total; latePayInfo={...lp,deadline,payDate:baseDate,paidDate:paidDateStr};
+      penaltyAudit.push(`납부지연가산세 = ${lp.parts.map(p=>`${p.k?p.k+' ':''}미납 ${won(p.unpaid)} × ${p.seg.days}일`).join(' + ')} (일당율 구간분할) = ${won(latePay)}`);
     }
   }
   last.reportPenalty=reportPenalty; last.latePay=latePay; last.penaltyAudit=penaltyAudit; last.latePayInfo=latePayInfo;
   last.penaltyTotal=reportPenalty+latePay;
   rows.forEach(r=>{ r.finalTax = r.netTax + (r.penaltyTotal||0); });
+  last.office=office; last.priorPaid=priorPaid; last.priorNetEff=priorNetEff; last.underBase=underBase; last.underAuto=underAuto;
+  last.noticeTax=office?Math.max(0,last.finalTax-priorPaid):last.finalTax;   // 차감 고지세액 = 총결정세액 − 기납부
+  last.refund=office?Math.max(0,priorPaid-last.finalTax):0;
+  if(office&&last.refund>0) warn.push(['warn',`기납부세액 ${won(priorPaid)}이 총결정세액 ${won(last.finalTax)}을 초과합니다: 고지세액 0, 차액 ${won(last.refund)}은 환급(감액경정) 검토.`]);
 
   const grandTotal=rows.reduce((s,r)=>s+r.finalTax,0);
   if(last.belowMin) warn.push(['ok','당해 증여 과세표준이 50만원 미만이므로 증여세를 부과하지 않습니다(과세최저한, §55②).']);
 
   let farmRow=null; for(const x of rows) if(x.pool==='F') farmRow=x;
   if(last.taxedPart) farmRow=rows[last.fromIdx];
-  return {rows,last,grandTotal,multi:rows.length>1,nInput,farmRow,farmAny,info,minor,resident,reportType,warn,
+  return {rows,last,grandTotal,office,multi:rows.length>1,nInput,farmRow,farmAny,info,minor,resident,reportType,warn,
     deadline:deadlineFrom(last.date)};
 }
 
@@ -1920,11 +1999,16 @@ function detailRows(r){
   if(r.surcharge) h+=row('산출세액 합계',won(r.totalCalc)+'원','','major');
   if(r.creditPrepaid) h+=row('− 기납부세액공제',won(r.creditPrepaid)+'원','§58','minus');
   if(r.cForeign) h+=row('− 외국납부세액공제',won(r.cForeign)+'원','§59','minus');
-  if(r.creditReport) h+=row(`− 신고세액공제 (${Math.round(r.rcRate*100)}%)`,won(r.creditReport)+'원','§69','minus');
-  h+=row('차감 납부세액',won(r.netTax)+'원','','major');
+  if(r.creditReport) h+=row(`− 신고세액공제 (${Math.round(r.rcRate*100)}%)`+(r.rcPrior?` <span class="pill">당초 신고분${r.rcEst?' · 역산 추정':''}</span>`:''),won(r.creditReport)+'원','§69','minus');
+  h+=row(r.office?'결정세액 (가산세 전)':'차감 납부세액',won(r.netTax)+'원','','major');
   if(r.penaltyTotal){
     if(r.reportPenalty) h+=row(r.reportType==='none'||r.reportTypeEff==='none'?'＋ 무신고가산세':'＋ 과소신고가산세',won(r.reportPenalty)+'원',r.reportTypeEff==='none'?'국기§47의2':'국기§47의3','plus');
     if(r.latePay) h+=row('＋ 납부지연가산세',won(r.latePay)+'원','국기§47의4','plus');
+  }
+  if(r.office){
+    h+=row('총결정세액',won(r.finalTax)+'원','','major');
+    h+=row('− 당해 증여분 기납부세액',won(r.priorPaid)+'원','','minus');
+    h+=row('차감 고지세액'+(r.refund?' <span class="pill">환급 '+won(r.refund)+'</span>':''),won(r.noticeTax)+'원','고지서','final');
   }
   return h;
 }
@@ -2030,7 +2114,12 @@ function render(r){
   const last=r.last;
   const minorTag = (r.info.kind==='asc'||r.info.gskip) ? `<span class="pill">${r.minor?'미성년':'성년'}</span>`:'';
 
-  const head=`<div class="res-head">
+  const officeTag = r.office ? `<span class="pill">${r.reportType==='under'?'과소신고':'무신고'} 결정</span>` : '';
+  const head=r.office?`<div class="res-head">
+    <div class="lbl">고지할 증여세 (차감 고지세액${r.multi?`, 당해 ${last.idx}회차`:''}) ${minorTag} ${officeTag}</div>
+    <div class="amt">${won(last.noticeTax)}<small> 원</small></div>
+    <div class="sub2">${r.info.kr} · 총결정세액 ${korMoney(last.finalTax)} − 기납부 ${korMoney(last.priorPaid)}</div>
+  </div>`:`<div class="res-head">
     <div class="lbl">${r.multi?`자진납부할 증여세 합계 (${r.nInput}회) `:'자진납부할 증여세 '}${minorTag}</div>
     <div class="amt">${won(r.grandTotal)}<small> 원</small></div>
     <div class="sub2">${r.info.kr} · ${korMoney(r.grandTotal)}</div>
@@ -2068,7 +2157,7 @@ function render(r){
   // 안내
   let notes='';
   if(r.deadline) notes+=`<div class="note ok"><b>당해 증여 신고·납부기한</b> : ${fmtDate(r.deadline)}까지 (증여일이 속하는 달의 말일부터 3개월, §68)</div>`;
-  const plans=payPlan(last.finalTax);
+  const plans=payPlan(last.office?last.noticeTax:last.finalTax);
   if(plans.length) notes+=`<div class="note warn">${plans.map(p=>'• '+p).join('<br>')}<br><span class="sub" style="color:inherit">※ 당해 증여 납부세액 기준</span></div>`;
   for(const [cls,msg] of (r.warn||[])) notes+=`<div class="note ${cls}">${msg}</div>`;
 
@@ -2076,9 +2165,13 @@ function render(r){
   let penBlock='';
   if(last.penaltyAudit && last.penaltyAudit.length){
     penBlock=`<div class="sec-title">가산세 산정내역 (당해 증여)</div><div class="audit">`+last.penaltyAudit.map(a=>`<div>${a}</div>`).join('');
-    if(last.latePayInfo && last.latePayInfo.segs.length){
-      penBlock+=`<div style="margin-top:6px" class="at">납부지연 구간분할 (${fmtDate(last.latePayInfo.deadline)} 다음날 ~ ${fmtDate(last.latePayInfo.payDate)})</div>`;
-      for(const s of last.latePayInfo.segs) penBlock+=`<div>· ${s.label} : ${s.days}일 × ${(s.rate*100).toFixed(3)}% = ${won(s.amt)}원</div>`;
+    if(last.latePayInfo && last.latePayInfo.parts && last.latePayInfo.parts.length){
+      const li=last.latePayInfo;
+      penBlock+=`<div style="margin-top:6px" class="at">납부지연 ${li.split?'두 구간 분할':'구간'} (법정납부기한 ${fmtDate(li.deadline)}${li.split?` · 납부일 ${li.paidDate}`:''} · 기준일 ${fmtDate(li.payDate)})</div>`;
+      for(const p of li.parts){
+        penBlock+=`<div>${p.k?p.k+' ':'· '}${p.label}: ${fmtDate(p.from)} 다음날 ~ ${fmtDate(p.to)}, 미납 ${won(p.unpaid)}원 × ${p.seg.days}일 = ${won(p.seg.total)}원</div>`;
+        for(const s of p.seg.segs) penBlock+=`<div style="padding-left:16px">└ ${s.label} : ${s.days}일 × ${(s.rate*100).toFixed(3)}% = ${won(s.amt)}원</div>`;
+      }
     }
     penBlock+=`</div>`;
   }
@@ -2099,9 +2192,11 @@ function render(r){
   else if(last.surcharge) a.push(`세대생략 할증 = ${won(last.calcTax)} × ${Math.round(last.surRate*100)}% = ${won(last.surcharge)}`);
   if(last.creditPrepaid && (last.credA||last.credB)) a.push(`기납부세액공제 = min(A 종전한계세액합 ${won(last.credA)}, B 한도 ${won(last.credB)}) = ${won(last.creditPrepaid)} (§58, 재산세과-421)`);
   else if(last.creditPrepaid) a.push(`기납부세액공제 = ${won(last.creditPrepaid)} (§58)`);
-  if(last.creditReport) a.push(`신고세액공제 = (${won(Math.max(0,last.totalCalc-last.creditPrepaid-last.cForeign))}) × ${Math.round(last.rcRate*100)}% = ${won(last.creditReport)}`);
-  else if(last.reportTypeEff!=='within') a.push(`신고세액공제 = 0 (기한후·수정신고 배제, §69)`);
-  a.push(`자진납부세액 = 산출 합계 ${won(last.totalCalc)} − 세액공제 ${won(last.creditTotal)}${last.penaltyTotal?` + 가산세 ${won(last.penaltyTotal)}`:''} = ${won(last.finalTax)}`);
+  if(last.rcPrior) a.push(`신고세액공제 = 당초 신고분 유지 ${won(last.creditReport)}${last.rcEst?` (기납부 ${won(last.priorPaid)} × ${Math.round(last.rcRate*100)}/${100-Math.round(last.rcRate*100)} 역산 추정)`:' (입력)'}${last.rcCapped?' [한도 제한]':''} (§69)`);
+  else if(last.creditReport) a.push(`신고세액공제 = (${won(Math.max(0,last.totalCalc-last.creditPrepaid-last.cForeign))}) × ${Math.round(last.rcRate*100)}% = ${won(last.creditReport)}`);
+  else if(last.reportTypeEff!=='within') a.push(`신고세액공제 = 0 (무신고·기한후신고 배제, §69)`);
+  a.push(`${last.office?'총결정세액':'자진납부세액'} = 산출 합계 ${won(last.totalCalc)} − 세액공제 ${won(last.creditTotal)}${last.penaltyTotal?` + 가산세 ${won(last.penaltyTotal)}`:''} = ${won(last.finalTax)}`);
+  if(last.office) a.push(`차감 고지세액 = 총결정세액 ${won(last.finalTax)} − 당해 증여분 기납부세액 ${won(last.priorPaid)} = ${won(last.noticeTax)}${last.refund?` (환급 ${won(last.refund)})`:''}`);
   }
   const auditBlock=`<div class="sec-title">계산명세 (당해 증여, audit)</div><div class="audit"><div class="at">상증세법 별지 제10호서식 흐름</div>`+a.map(x=>`<div>· ${x}</div>`).join('')+`</div>`;
 
@@ -2120,6 +2215,7 @@ function syncUI(){
   $('penaltyBox').style.display = showPen?'block':'none';
   if(showPen) $('penaltyBox').open=true;
   $('underRow').style.display = rt==='under'?'block':'none';
+  $('priorUnderRows').style.display = rt==='under'?'grid':'none';
   $('intlRow').style.display = $('isFraud').checked?'block':'none';
   $('monthsRow').style.display = $('voluntary').checked?'block':'none';
   $('latePayInputs').style.display = $('useLatePay').checked?'block':'none';
@@ -2131,7 +2227,7 @@ $('addGift').addEventListener('click',()=>addGiftRow());
 $('useRowLimit').addEventListener('change',syncRowLimit);
 $('calcBtn').addEventListener('click',()=>render(calculate()));
 $('resetBtn').addEventListener('click',()=>{
-  document.querySelectorAll('input[type=text],input[type=number]').forEach(e=>e.value='');
+  document.querySelectorAll('input[type=text],input[type=number],input[type=date]').forEach(e=>e.value='');
   $('giftList').innerHTML=''; addGiftRow();
   $('relation').value='child'; $('reportType').value='within';
   $('m_adult').checked=true; $('r_yes').checked=true;
